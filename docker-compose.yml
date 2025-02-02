@@ -136,6 +136,8 @@ services:
     ports:
       - "8080:8080"
       - "8081:8081"
+    environment:
+      - ASPNETCORE_URLS=https://0.0.0.0:8081
     networks:
       - postgres
     depends_on:
