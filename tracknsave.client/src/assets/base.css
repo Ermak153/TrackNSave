@@ -1,0 +1,23 @@
+:root {
+  --vt-c-white: rgb(255, 255, 255);
+  --vt-c-background: rgb(20, 27, 37);
+  --vt-c-light-green: rgb(137, 225, 89);
+  --vt-c-dark-green: rgb(6, 157, 61);
+  --vt-c-light-gray: rgb(191, 198, 220)
+}
+
+:root {
+  --color-background: var(--vt-c-background);
+  --primary-green: var(--vt-c-light-green);
+  --dark-green: var(--vt-c-dark-green)
+}
+
+body {
+  min-height: 100vh;
+  background: var(--color-background);
+  line-height: 1.6;
+  font-family: 'Segoe UI';
+  font-size: 15px;
+  margin: 0;
+  padding: 0;
+}

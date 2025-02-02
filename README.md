@@ -1,0 +1,113 @@
+# TrackNSave
+
+## 🌍 Language / Язык  
+<details>
+  <summary>English</summary>
+
+## 📥 Installation Guide
+
+Follow these steps to install and run the application:
+
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/Ermak153/TrackNSave.git
+   cd tracknsave
+   ```
+
+2. Create a `.env` file in the root directory and add the following variables:
+   ```env
+   POSTGRES_USER=postgres_username
+   POSTGRES_PASSWORD=database_password
+   PGADMIN_EMAIL=your_email
+   PGADMIN_PASSWORD=password_for_admin_panel
+   ```
+
+3. Navigate to `tracknsave.client` and install dependencies:
+   ```sh
+   cd tracknsave.client
+   npm i
+   ```
+
+4. Go to `TrackNSave.Server`, rename `appsetting.Example.json` to `appsettings.json`:
+   ```sh
+   cd ../TrackNSave.Server
+   mv appsetting.Example.json appsettings.json
+   ```
+
+5. Edit `appsettings.json` and update it with your configuration.
+
+6. Install and start Docker Desktop. Ensure Docker Engine is running.
+
+7. Open the project in Visual Studio.
+
+8. Select `docker-compose` as the startup project.
+
+9. Run the application and wait for the setup to complete (approximately 30 minutes).
+
+---
+
+## 🔗 Access to Services
+
+After successfully starting the project, you can access the services at the following URLs:
+
+- **pgAdmin** → [http://localhost:5050/](http://localhost:5050/)
+- **Client (Frontend)** → [https://localhost:5173/](https://localhost:5173/)
+- **pg_exporter** → [http://localhost:9187/](http://localhost:9187/)
+
+</details>
+
+---
+
+<details>
+  <summary>Русский</summary>
+
+## 📥 Руководство по установке
+
+Следуйте этим шагам для установки и запуска приложения:
+
+1. Склонируйте репозиторий:
+   ```sh
+   git clone https://github.com/Ermak153/TrackNSave.git
+   cd tracknsave
+   ```
+
+2. Создайте файл `.env` в корне и добавьте в него следующие переменные:
+   ```env
+   POSTGRES_USER=postgres_username
+   POSTGRES_PASSWORD=database_password
+   PGADMIN_EMAIL=your_email
+   PGADMIN_PASSWORD=password_for_admin_panel
+   ```
+
+3. Перейдите в `tracknsave.client` и установите зависимости:
+   ```sh
+   cd tracknsave.client
+   npm i
+   ```
+
+4. Откройте `TrackNSave.Server`, переименуйте `appsetting.Example.json` в `appsettings.json`:
+   ```sh
+   cd ../TrackNSave.Server
+   mv appsetting.Example.json appsettings.json
+   ```
+
+5. Измените `appsettings.json`, добавив свои настройки.
+
+6. Установите и запустите Docker Desktop. Убедитесь, что Docker Engine работает.
+
+7. Откройте проект в Visual Studio.
+
+8. Выберите `docker-compose` в качестве запускаемого проекта.
+
+9. Запустите проект и дождитесь завершения установки (примерно 30 минут).
+
+---
+
+## 🔗 Доступ к сервисам
+
+После успешного запуска проекта доступ к сервисам осуществляется по следующим ссылкам:
+
+- **pgAdmin** → [http://localhost:5050/](http://localhost:5050/)
+- **Клиент (Frontend)** → [https://localhost:5173/](https://localhost:5173/)
+- **pg_exporter** → [http://localhost:9187/](http://localhost:9187/)
+</details>

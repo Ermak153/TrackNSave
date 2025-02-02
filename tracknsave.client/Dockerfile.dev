@@ -1,0 +1,11 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY tracknsave.client/package*.json ./
+
+RUN npm ci
+
+EXPOSE 5173
+
+CMD ["npm", "run", "dev"]

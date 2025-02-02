@@ -1,0 +1,168 @@
+services:
+  postgres:
+    container_name: postgres_tracknsave
+    image: postgres:16-alpine
+    command:
+      - "postgres"
+      - "-c"
+      - "max_connections=100"
+      - "-c"
+      - "shared_buffers=512MB"
+      - "-c"
+      - "effective_cache_size=4GB"
+      - "-c"
+      - "work_mem=64MB"
+      - "-c"
+      - "maintenance_work_mem=512MB"
+      - "-c"
+      - "random_page_cost=1.1"
+      - "-c"
+      - "temp_file_limit=10GB"
+      - "-c"
+      - "log_min_duration_statement=200ms"
+      - "-c"
+      - "idle_in_transaction_session_timeout=10s"
+      - "-c"
+      - "lock_timeout=5s"
+      - "-c"
+      - "statement_timeout=60s"
+      - "-c"
+      - "shared_preload_libraries=pg_stat_statements"
+      - "-c"
+      - "pg_stat_statements.max=10000"
+      - "-c"
+      - "pg_stat_statements.track=top"
+      - "-c"
+      - "timezone=UTC"
+      - "-c"
+      - "max_prepared_transactions=0"
+    environment:
+      POSTGRES_DB: TrackNSave
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+      TZ: UTC
+    volumes:
+      - ./initdb:/docker-entrypoint-initdb.d
+      - tracknsave-data:/var/lib/postgresql/data
+      - postgres-backups:/backups
+      - ./migrations:/migrations
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d TrackNSave"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 4G
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - postgres
+
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 1G
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres_exporter:
+    container_name: exporter_container
+    image: prometheuscommunity/postgres-exporter:latest
+    environment:
+      DATA_SOURCE_URI: "postgres:5432/TrackNSave?sslmode=disable"
+      DATA_SOURCE_USER: ${POSTGRES_USER}
+      DATA_SOURCE_PASS: ${POSTGRES_PASSWORD}
+      PG_EXPORTER_EXTEND_QUERY_PATH: "/etc/postgres_exporter/queries.yaml"
+    volumes:
+      - ./queries.yaml:/etc/postgres_exporter/queries.yaml:ro
+    ports:
+      - "9187:9187"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 500M
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:9187/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  tracknsave.server:
+    image: ${DOCKER_REGISTRY-}tracknsaveserver
+    build:
+      context: .
+      dockerfile: TrackNSave.Server/Dockerfile
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    networks:
+      - postgres
+    depends_on:
+      - postgres
+
+  tracknsave.client:
+    image: ${DOCKER_REGISTRY-}tracknsaveclient
+    build:
+      context: .
+      dockerfile: tracknsave.client/Dockerfile.dev
+    environment:
+      - DOCKER=true
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./tracknsave.client:/app
+      - /app/node_modules
+    networks:
+      - postgres
+    depends_on:
+      - tracknsave.server
+
+volumes:
+  tracknsave-data:
+  pgadmin-data:
+  postgres-backups:
+
+networks:
+  postgres:
+    driver: bridge

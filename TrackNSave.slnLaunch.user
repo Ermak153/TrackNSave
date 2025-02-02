@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "Docker-compose",
+    "Projects": [
+      {
+        "Path": "docker-compose.dcproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "tracknsave.client\\tracknsave.client.esproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]
