@@ -3,13 +3,13 @@
   --vt-c-background: rgb(20, 27, 37);
   --vt-c-light-green: rgb(137, 225, 89);
   --vt-c-dark-green: rgb(6, 157, 61);
-  --vt-c-light-gray: rgb(191, 198, 220)
+  --vt-c-light-gray: rgb(191, 198, 220);
 }
 
 :root {
   --color-background: var(--vt-c-background);
   --primary-green: var(--vt-c-light-green);
-  --dark-green: var(--vt-c-dark-green)
+  --dark-green: var(--vt-c-dark-green);
 }
 
 body {

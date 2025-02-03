@@ -13,6 +13,7 @@ RUN apt-get -y install nodejs
 FROM with-node AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
+
 COPY ["TrackNSave.Server/TrackNSave.Server.csproj", "TrackNSave.Server/"]
 COPY ["tracknsave.client/tracknsave.client.esproj", "tracknsave.client/"]
 RUN dotnet restore "./TrackNSave.Server/TrackNSave.Server.csproj"

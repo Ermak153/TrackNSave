@@ -37,7 +37,7 @@ services:
       - "-c"
       - "max_prepared_transactions=0"
     environment:
-      POSTGRES_DB: TrackNSave
+      POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: "/var/lib/postgresql/data/pgdata"
@@ -50,7 +50,7 @@ services:
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d TrackNSave"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -99,7 +99,7 @@ services:
     container_name: exporter_container
     image: prometheuscommunity/postgres-exporter:latest
     environment:
-      DATA_SOURCE_URI: "postgres:5432/TrackNSave?sslmode=disable"
+      DATA_SOURCE_URI: "postgres:5432/${POSTGRES_DB}?sslmode=disable"
       DATA_SOURCE_USER: ${POSTGRES_USER}
       DATA_SOURCE_PASS: ${POSTGRES_PASSWORD}
       PG_EXPORTER_EXTEND_QUERY_PATH: "/etc/postgres_exporter/queries.yaml"
@@ -129,13 +129,18 @@ services:
         condition: service_healthy
 
   tracknsave.server:
-    image: ${DOCKER_REGISTRY-}tracknsaveserver
+    container_name: tracknsave.server_container
+    image: ${DOCKER_REGISTRY-}tracknsaveserver:latest
     build:
       context: .
       dockerfile: TrackNSave.Server/Dockerfile
+      args:
+        - VERSION=latest
     ports:
       - "8080:8080"
       - "8081:8081"
+    volumes:
+      - ./.env:/app/.env
     environment:
       - ASPNETCORE_URLS=https://0.0.0.0:8081
     networks:
@@ -144,6 +149,7 @@ services:
       - postgres
 
   tracknsave.client:
+    container_name: tracknsave.client_container
     image: ${DOCKER_REGISTRY-}tracknsaveclient
     build:
       context: .

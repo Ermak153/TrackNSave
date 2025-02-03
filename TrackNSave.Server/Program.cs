@@ -1,3 +1,4 @@
+using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -6,6 +7,15 @@ using TrackNSave.Server.Data;
 using TrackNSave.Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+Env.Load();
+
+var postgresPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
+var postgresUser = Environment.GetEnvironmentVariable("POSTGRES_USER");
+var postgresDb = Environment.GetEnvironmentVariable("POSTGRES_DB");
+var connectionString = $"Host=host.docker.internal;Database={postgresDb};Username={postgresUser};Password={postgresPassword}";
+
+Environment.SetEnvironmentVariable("ConnectionStrings__PostgreSQL", connectionString);
 
 builder.Configuration.AddEnvironmentVariables();
 

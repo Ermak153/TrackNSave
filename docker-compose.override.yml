@@ -1,5 +1,9 @@
 services:
   tracknsave.server:
+    image: ${DOCKER_REGISTRY-}tracknsaveserver:latest
+    build:
+      args:
+        - VERSION=latest
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
