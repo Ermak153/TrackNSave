@@ -24,19 +24,13 @@ Follow these steps to install and run the application:
    Jwt__Key=your_super_long_and_secret_key
    ```
 
-3. Navigate to `tracknsave.client` and install dependencies:
-   ```sh
-   cd tracknsave.client
-   npm i
-   ```
+3. Install and start Docker Desktop. Ensure Docker Engine is running.
 
-4. Install and start Docker Desktop. Ensure Docker Engine is running.
+4. Open the project in Visual Studio.
 
-5. Open the project in Visual Studio.
+5. Select `docker-compose` as the startup project.
 
-6. Select `docker-compose` as the startup project.
-
-7. Run the application and wait for the setup to complete (approximately 30 minutes).
+6. Run the application and wait for the setup to complete (approximately 30 minutes).
 
 ---
 
@@ -44,10 +38,9 @@ Follow these steps to install and run the application:
 
 After successfully starting the project, you can access the services at the following URLs:
 
-- **pgAdmin** → [http://localhost:5050/](http://localhost:5050/)
-- **Client (Frontend)** → [https://localhost:5173/](https://localhost:5173/)
-- **Сlient (Frontend) from other devices in your Wi-Fi** → [https://192.168.31.131:5173/](https://192.168.31.131:5173/)
-- **pg_exporter** → [http://localhost:9187/](http://localhost:9187/)
+- **pgAdmin** → [http://192.168.31.131:5050/](http://192.168.31.131:5050/)
+- **Client (Frontend)** → [https://192.168.31.131:5173/](https://192.168.31.131:5173/)
+- **pg_exporter** → [http://192.168.31.131:9187/](http://192.168.31.131:9187/)
 
 </details>
 
@@ -76,19 +69,13 @@ After successfully starting the project, you can access the services at the foll
    Jwt__Key=your_super_long_and_secret_key
    ```
 
-3. Перейдите в `tracknsave.client` и установите зависимости:
-   ```sh
-   cd tracknsave.client
-   npm i
-   ```
+3. Установите и запустите Docker Desktop. Убедитесь, что Docker Engine работает.
 
-4. Установите и запустите Docker Desktop. Убедитесь, что Docker Engine работает.
+4. Откройте проект в Visual Studio.
 
-5. Откройте проект в Visual Studio.
+5. Выберите `docker-compose` в качестве запускаемого проекта.
 
-6. Выберите `docker-compose` в качестве запускаемого проекта.
-
-7. Запустите проект и дождитесь завершения установки (примерно 30 минут).
+6. Запустите проект и дождитесь завершения установки (примерно 30 минут).
 
 ---
 
@@ -96,8 +83,7 @@ After successfully starting the project, you can access the services at the foll
 
 После успешного запуска проекта доступ к сервисам осуществляется по следующим ссылкам:
 
-- **pgAdmin** → [http://localhost:5050/](http://localhost:5050/)
-- **Клиент (Frontend)** → [https://localhost:5173/](https://localhost:5173/)
-- **Клиент (Frontend) с других устройств в вашем Wi-Fi** → [https://192.168.31.131:5173/](https://192.168.31.131:5173/)
-- **pg_exporter** → [http://localhost:9187/](http://localhost:9187/)
+- **pgAdmin** → [http://192.168.31.131:5050/](http://192.168.31.131:5050/)
+- **Клиент (Frontend)** → [https://192.168.31.131:5173/](https://192.168.31.131:5173/)
+- **pg_exporter** → [http://192.168.31.131:9187/](http://192.168.31.131:9187/)
 </details>
