@@ -4,48 +4,69 @@
       <h2 class="auth__title">
         {{ isRegistering ? "Регистрация" : "Авторизация" }}
       </h2>
-      <form @submit.prevent="handleSubmit" class="auth__form">
-        <p v-if="errorMessage" class="auth__error">{{ errorMessage }}</p>
+      <Form
+        :validation-schema="currentSchema"
+        @submit="handleSubmit"
+        class="auth__form"
+        ref="form"
+      >
+        <div v-if="errorMessage" class="auth__error-message">
+          {{ errorMessage }}
+        </div>
         <div class="auth__form-group">
           <label for="username" class="auth__label">Логин</label>
-          <input
-            type="text"
-            id="username"
-            v-model="formData.username"
-            placeholder="Введите ваш логин"
-            class="auth__input"
-            required
-          />
+          <Field name="username" v-slot="{ field, errorMessage }">
+            <input
+              v-bind="field"
+              id="username"
+              :class="['auth__input', { 'auth__input--error': errorMessage }]"
+              placeholder="Введите ваш логин"
+              v-model="formData.username"
+            />
+          </Field>
+          <ErrorMessage name="username" v-slot="{ message }">
+            <div v-if="message" class="auth__error">{{ message }}</div>
+          </ErrorMessage>
         </div>
 
         <div class="auth__form-group" v-if="isRegistering">
           <label for="email" class="auth__label">Email</label>
-          <input
-            type="email"
-            id="email"
-            v-model="formData.email"
-            placeholder="Введите ваш email"
-            class="auth__input"
-            required
-          />
+          <Field name="email" v-slot="{ field, errorMessage }">
+            <input
+              v-bind="field"
+              id="email"
+              :class="['auth__input', { 'auth__input--error': errorMessage }]"
+              placeholder="Введите ваш email"
+              v-model="formData.email"
+            />
+          </Field>
+          <ErrorMessage name="email" v-slot="{ message }">
+            <div v-if="message" class="auth__error">{{ message }}</div>
+          </ErrorMessage>
         </div>
 
         <div class="auth__form-group">
           <label for="password" class="auth__label">Пароль</label>
-          <input
-            type="password"
-            id="password"
-            v-model="formData.password"
-            placeholder="Введите ваш пароль"
-            class="auth__input"
-            required
-          />
+          <Field name="password" v-slot="{ field, errorMessage }">
+            <input
+              v-bind="field"
+              id="password"
+              type="password"
+              :class="['auth__input', { 'auth__input--error': errorMessage }]"
+              placeholder="Введите ваш пароль"
+              v-model="formData.password"
+            />
+          </Field>
+          <ErrorMessage name="password" v-slot="{ message }">
+            <div v-if="message" class="auth__error">{{ message }}</div>
+          </ErrorMessage>
         </div>
 
         <button type="submit" class="auth__button">
           {{ isRegistering ? "Зарегистрироваться" : "Войти" }}
         </button>
-      </form>
+      </Form>
+
       <p class="auth__toggle">
         {{ isRegistering ? "Уже есть аккаунт?" : "Нет аккаунта?" }}
         <button @click="toggleForm" class="auth__toggle-button">
@@ -57,8 +78,55 @@
 </template>
 
 <script setup lang="ts">
-  import { ref } from "vue";
+  import { ref, computed } from "vue";
   import api from "@/api/axios";
+  import { AxiosError } from "axios";
+  import { Form, Field, ErrorMessage, configure } from "vee-validate";
+  import type { FormActions } from "vee-validate";
+  import * as yup from "yup";
+
+  configure({
+    validateOnBlur: true,
+    validateOnChange: true,
+    validateOnInput: false,
+    validateOnModelUpdate: false,
+  });
+
+  interface FormValues {
+    username: string;
+    email?: string;
+    password: string;
+  }
+
+  const form = ref<FormActions<FormValues>>();
+
+  const loginSchema = yup.object({
+    username: yup
+      .string()
+      .required("Логин обязателен")
+      .matches(/^[a-zA-Z0-9]+$/, "Логин должен содержать только буквы и цифры")
+      .min(4, "Логин должен быть длиннее 4 символов"),
+    password: yup
+      .string()
+      .required("Пароль обязателен")
+      .min(5, "Пароль должен быть не менее 5 символов"),
+  });
+
+  const registerSchema = yup.object({
+    username: yup
+      .string()
+      .required("Логин обязателен")
+      .matches(/^[a-zA-Z0-9]+$/, "Логин должен содержать только буквы и цифры")
+      .min(4, "Логин должен быть длиннее 4 символов"),
+    email: yup
+      .string()
+      .required("Email обязателен")
+      .email("Введите корректный email"),
+    password: yup
+      .string()
+      .required("Пароль обязателен")
+      .min(5, "Пароль должен быть длиннее 5 символов"),
+  });
 
   const isRegistering = ref(false);
   const formData = ref({
@@ -69,10 +137,18 @@
 
   const errorMessage = ref("");
 
+  const currentSchema = computed(() => {
+    return isRegistering.value ? registerSchema : loginSchema;
+  });
+
   function toggleForm() {
     isRegistering.value = !isRegistering.value;
     formData.value = { username: "", email: "", password: "" };
     errorMessage.value = "";
+
+    if (form.value) {
+      form.value.resetForm();
+    }
   }
 
   async function handleSubmit() {
@@ -92,16 +168,35 @@
           username: formData.value.username,
           password: formData.value.password,
         });
-        console.log(
-          isRegistering.value ? "Регистрация успешна" : "Авторизация успешна",
-          response.data
-        );
+        console.log("Авторизация успешна:", response.data);
       }
-    } catch (error: any) {
-      if (error.response) {
-        errorMessage.value = error.response.data.message || "Произошла ошибка";
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        if (!error.response) {
+          errorMessage.value = "Ошибка сети. Проверьте подключение.";
+        } else {
+          const status = error.response.status;
+          const message = error.response.data?.message || "Произошла ошибка";
+          switch (status) {
+            case 401:
+              errorMessage.value = `Неверное имя пользователя или пароль`;
+              break;
+
+            case 409:
+              switch (message) {
+                case "Username already taken":
+                  errorMessage.value = "Имя пользователя занято";
+                  break;
+
+                case "Email already taken":
+                  errorMessage.value = "Этот E-mail уже зарегистрирован";
+                  break;
+              }
+              break;
+          }
+        }
       } else {
-        errorMessage.value = "Ошибка сети";
+        errorMessage.value = "Непредвиденная ошибка";
       }
     }
   }
@@ -110,6 +205,11 @@
 <style lang="scss" scoped>
   .auth {
     &__error {
+      color: #ff4d4d;
+      font-size: 14px;
+    }
+
+    &__error-message {
       color: #ff4d4d;
       background: rgba(255, 77, 77, 0.1);
       padding: 8px;
@@ -166,6 +266,11 @@
       border-radius: 5px;
       font-size: 16px;
       box-sizing: border-box;
+      transition: border-color 0.2s ease;
+
+      &--error {
+        border-color: #ff4d4d;
+      }
     }
 
     &__button {

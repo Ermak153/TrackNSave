@@ -1,5 +1,7 @@
-﻿using System.Security.Cryptography;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using TrackNSave.Server.Data;
 using TrackNSave.Server.Models;
@@ -45,6 +47,15 @@ namespace TrackNSave.Server.Services
 
         public async Task<string?> RegisterUserAsync(string username, string email, string password)
         {
+            if (!Regex.IsMatch(username, "^[a-zA-Z0-9]+$"))
+                return "Username can contain only Latin letters and numbers";
+
+            if (!new EmailAddressAttribute().IsValid(email))
+                return "Invalid email format";
+
+            if (password.Length < 5)
+                return "Password must be at least 5 characters long";
+
             if (await GetUserByUsernameAsync(username) != null)
                 return "Username already taken";
 
