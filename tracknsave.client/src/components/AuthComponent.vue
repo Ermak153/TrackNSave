@@ -78,12 +78,16 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed } from "vue";
   import api from "@/api/axios";
+  import { string, object } from "yup";
   import { AxiosError } from "axios";
   import { Form, Field, ErrorMessage, configure } from "vee-validate";
   import type { FormActions } from "vee-validate";
-  import * as yup from "yup";
+  import { ref, computed } from "vue";
+  import { useAuth } from "@/composables/useAuth.ts";
+  import router from "@/router";
+
+  const { checkAuthStatus } = useAuth();
 
   configure({
     validateOnBlur: true,
@@ -100,30 +104,27 @@
 
   const form = ref<FormActions<FormValues>>();
 
-  const loginSchema = yup.object({
-    username: yup
-      .string()
+  const loginSchema = object({
+    username: string()
       .required("Логин обязателен")
-      .matches(/^[a-zA-Z0-9]+$/, "Логин должен содержать только буквы и цифры")
-      .min(4, "Логин должен быть длиннее 4 символов"),
-    password: yup
-      .string()
+      .matches(/^[a-zA-Z0-9]+$/, "Допускаются только латинские буквы и цифры")
+      .min(4, "Логин должен быть длиннее 4 символов")
+      .max(20, "Логин не должен быть короче 20 символов"),
+    password: string()
       .required("Пароль обязателен")
-      .min(5, "Пароль должен быть не менее 5 символов"),
+      .min(5, "Пароль должен быть длиннее 5 символов"),
   });
 
-  const registerSchema = yup.object({
-    username: yup
-      .string()
+  const registerSchema = object({
+    username: string()
       .required("Логин обязателен")
-      .matches(/^[a-zA-Z0-9]+$/, "Логин должен содержать только буквы и цифры")
-      .min(4, "Логин должен быть длиннее 4 символов"),
-    email: yup
-      .string()
+      .matches(/^[a-zA-Z0-9]+$/, "Допускаются только латинские буквы и цифры")
+      .min(4, "Логин должен быть длиннее 4 символов")
+      .max(20, "Логин не должен быть короче 20 символов"),
+    email: string()
       .required("Email обязателен")
       .email("Введите корректный email"),
-    password: yup
-      .string()
+    password: string()
       .required("Пароль обязателен")
       .min(5, "Пароль должен быть длиннее 5 символов"),
   });
@@ -154,21 +155,26 @@
   async function handleSubmit() {
     try {
       errorMessage.value = "";
-      let response;
 
       if (isRegistering.value) {
-        response = await api.post("/register", {
+        await api.post("/auth/register", {
           username: formData.value.username,
           email: formData.value.email,
           password: formData.value.password,
         });
-        console.log("Регистрация успешна:", response.data);
-      } else {
-        response = await api.post("/login", {
+        await api.post("/auth/login", {
           username: formData.value.username,
           password: formData.value.password,
         });
-        console.log("Авторизация успешна:", response.data);
+        await checkAuthStatus();
+        router.push("/");
+      } else {
+        await api.post("/auth/login", {
+          username: formData.value.username,
+          password: formData.value.password,
+        });
+        await checkAuthStatus();
+        router.push("/");
       }
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
@@ -205,12 +211,12 @@
 <style lang="scss" scoped>
   .auth {
     &__error {
-      color: #ff4d4d;
+      color: var(--vt-c-light-red);
       font-size: 14px;
     }
 
     &__error-message {
-      color: #ff4d4d;
+      color: var(--vt-c-light-red);
       background: rgba(255, 77, 77, 0.1);
       padding: 8px;
       border-radius: 5px;
@@ -269,7 +275,7 @@
       transition: border-color 0.2s ease;
 
       &--error {
-        border-color: #ff4d4d;
+        border-color: var(--vt-c-light-red);
       }
     }
 
@@ -304,7 +310,6 @@
         background: none;
         border: none;
         color: var(--primary-green);
-        cursor: pointer;
         font-size: 14px;
         padding: 0;
         text-decoration: underline;
@@ -312,7 +317,8 @@
 
         @media (hover: hover) and (pointer: fine) {
           &:hover {
-            color: var(--dark-green);
+            color: var(--primary-green);
+            opacity: 0.6;
             transition: 0.2s;
           }
         }

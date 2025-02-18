@@ -13,9 +13,13 @@ Env.Load();
 var postgresPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
 var postgresUser = Environment.GetEnvironmentVariable("POSTGRES_USER");
 var postgresDb = Environment.GetEnvironmentVariable("POSTGRES_DB");
+
 var connectionString = $"Host=host.docker.internal;Database={postgresDb};Username={postgresUser};Password={postgresPassword}";
+var jwtAudience = $"{postgresDb}Users";
 
 Environment.SetEnvironmentVariable("ConnectionStrings__PostgreSQL", connectionString);
+Environment.SetEnvironmentVariable("Jwt__Issuer", postgresDb);
+Environment.SetEnvironmentVariable("Jwt__Audience", jwtAudience);
 
 builder.Configuration.AddEnvironmentVariables();
 
@@ -45,8 +49,6 @@ var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!);
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.RequireHttpsMetadata = false;
-        options.SaveToken = true;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
@@ -57,7 +59,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration["Jwt:Audience"],
             ValidateLifetime = true
         };
+
+        // Чтение токена из HttpOnly cookies
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                context.Token = context.Request.Cookies["auth_token"];
+                return Task.CompletedTask;
+            }
+        };
     });
+
 
 var app = builder.Build();
 

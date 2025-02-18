@@ -15,6 +15,14 @@
     <img src="@/assets/logo.svg" width="300px" alt="Логотип" />
     <img src="@/assets/logo.svg" width="300px" alt="Логотип" />
     <img src="@/assets/logo.svg" width="300px" alt="Логотип" />
+    <img src="@/assets/logo.svg" width="300px" alt="Логотип" />
+    <img src="@/assets/logo.svg" width="300px" alt="Логотип" />
+    <img src="@/assets/logo.svg" width="300px" alt="Логотип" />
+    <img src="@/assets/logo.svg" width="300px" alt="Логотип" />
+    <img src="@/assets/logo.svg" width="300px" alt="Логотип" />
+    <img src="@/assets/logo.svg" width="300px" alt="Логотип" />
+    <img src="@/assets/logo.svg" width="300px" alt="Логотип" />
+    <img src="@/assets/logo.svg" width="300px" alt="Логотип" />
   </div>
 </template>
 
