@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using TrackNSave.Server.Models;
@@ -8,7 +9,7 @@ using TrackNSave.Server.Services;
 
 namespace TrackNSave.Server.Controllers
 {
-    [Route("api/")]
+    [Route("api/auth/")]
     [ApiController]
     public class AuthController : ControllerBase
     {
@@ -43,7 +44,23 @@ namespace TrackNSave.Server.Controllers
             }
 
             string token = GenerateJwtToken(user);
+
+            Response.Cookies.Append("auth_token", token, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddHours(1)
+            });
+
             return Ok(new { token });
+        }
+
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            Response.Cookies.Delete("auth_token");
+            return Ok(new { message = "Logout successful" });
         }
 
         private string GenerateJwtToken(User user)

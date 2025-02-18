@@ -27,7 +27,7 @@
   }
 
   .content {
-    padding-top: 180px;
+    padding-top: 150px;
     flex: 1;
     display: flex;
     flex-direction: column;

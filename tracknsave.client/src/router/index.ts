@@ -12,6 +12,16 @@ const routes: RouteRecordRaw[] = [
     name: 'AuthPage',
     component: () => import('@/pages/AuthPage.vue'),
   },
+  {
+    path: '/profile',
+    name: 'ProfilePage',
+    component: () => import('@/pages/ProfilePage.vue')
+  },
+  {
+    path: '/receipt',
+    name: 'ReceiptPage',
+    component: () => import('@/pages/ReceiptPage.vue')
+  }
 ];
 
 const router = createRouter({

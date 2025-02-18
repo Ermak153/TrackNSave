@@ -6,6 +6,7 @@
 
 <script setup lang="ts">
   import AuthComponent from '@/components/AuthComponent.vue';
+
 </script>
 
 <style lang="scss" scoped>
@@ -13,9 +14,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-
-    @media (max-width: 768px) {
-      margin-top: 30px;
-    }
+    margin-top: 50px;
   }
 </style>

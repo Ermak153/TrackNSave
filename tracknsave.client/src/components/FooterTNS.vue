@@ -26,7 +26,7 @@
     {
       src: "src/assets/icons/github.svg",
       alt: "Github",
-      link: "https://github.com/Ermak153",
+      link: "https://github.com/Ermak153/TrackNSave",
     },
     {
       src: "src/assets/icons/telegram.svg",
