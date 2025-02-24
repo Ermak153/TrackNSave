@@ -22,5 +22,7 @@ namespace TrackNSave.Server.Models
         public byte[] PasswordSalt { get; set; } = null!;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public ICollection<Receipt> Receipts { get; set; } = new List<Receipt>();
     }
 }

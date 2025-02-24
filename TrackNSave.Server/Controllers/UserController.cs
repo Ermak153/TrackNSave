@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using TrackNSave.Server.Services;
+using TrackNSave.Server.Services.Interfaces;
 
 namespace TrackNSave.Server.Controllers
 {
@@ -13,13 +14,13 @@ namespace TrackNSave.Server.Controllers
     [Route("api/user/")]
     public class UserController : ControllerBase
     {
-        private readonly IConfiguration _config;
-        private readonly UserService _userService;
+        private readonly IUserService _userService;
+        private readonly IJwtService _jwtService;
 
-        public UserController(UserService userService, IConfiguration config)
+        public UserController(IUserService userService, IJwtService jwtService)
         {
-            _config = config;
             _userService = userService;
+            _jwtService = jwtService;
         }
 
         [HttpGet("status")]
@@ -28,32 +29,16 @@ namespace TrackNSave.Server.Controllers
             var token = Request.Cookies["auth_token"];
             if (string.IsNullOrEmpty(token))
             {
-                return Ok(new { isAuthenticated = false });
+                return StatusCode(200, new { isAuthenticated = false });
             }
 
-            try
+            if (_jwtService.ValidateToken(token))
             {
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"]!);
-
-                tokenHandler.ValidateToken(token, new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidIssuer = _config["Jwt:Issuer"],
-                    ValidAudience = _config["Jwt:Audience"],
-                    ClockSkew = TimeSpan.Zero
-                }, out SecurityToken validatedToken);
-
-                return Ok(new { isAuthenticated = true });
+                return StatusCode(200, new { isAuthenticated = true });
             }
-            catch
-            {
-                Response.Cookies.Delete("auth_token");
-                return Ok(new { isAuthenticated = false });
-            }
+
+            Response.Cookies.Delete("auth_token");
+            return StatusCode(200, new { isAuthenticated = false });
         }
 
         [HttpGet("me")]
@@ -63,20 +48,16 @@ namespace TrackNSave.Server.Controllers
             var username = User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(username))
             {
-                return Unauthorized();
+                return StatusCode(401, new { message = "User is not authenticated" });
             }
 
             var user = await _userService.GetUserByUsernameAsync(username);
             if (user == null)
             {
-                return NotFound();
+                return StatusCode(404, new { message = "User was not found" });
             }
 
-            return Ok(new
-            {
-                username = user.Username,
-                email = user.Email
-            });
+            return StatusCode(200, new { username = user.Username, email = user.Email });
         }
     }
 }

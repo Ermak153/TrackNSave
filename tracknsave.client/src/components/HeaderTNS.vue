@@ -2,7 +2,7 @@
   <header class="header">
     <div class="header__container">
       <IconHeader to="/" />
-      <NavigationComponent class="header__navigation"/>
+      <NavigationComponent class="header__navigation" v-if="isAuthenticated"/>
       <div class="header__mobile-navigation">
         <router-link
           v-if="!isAuthenticated"

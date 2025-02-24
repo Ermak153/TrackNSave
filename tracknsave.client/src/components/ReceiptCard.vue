@@ -98,10 +98,12 @@
   .receipt {
     max-width: 1280px;
     width: 100%;
-    margin: 0 auto;
-    padding: 0 16px;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 
     &__card {
+      width: 100%;
       background-color: var(--vt-c-dark-blue-gray);
       border-radius: 12px;
       box-shadow: 0 4px 6px -1px rgb(0, 0, 0, 0.1);

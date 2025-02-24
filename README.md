@@ -22,6 +22,7 @@ Follow these steps to install and run the application:
    PGADMIN_EMAIL=your_email
    PGADMIN_PASSWORD=password_for_admin_panel
    Jwt__Key=your_super_long_and_secret_key
+   API_TOKEN=api_key_for_receipts
    ```
 
 3. Install and start Docker Desktop. Ensure Docker Engine is running.
@@ -67,6 +68,7 @@ After successfully starting the project, you can access the services at the foll
    PGADMIN_EMAIL=your_email
    PGADMIN_PASSWORD=password_for_admin_panel
    Jwt__Key=your_super_long_and_secret_key
+   API_TOKEN=api_key_for_receipts
    ```
 
 3. Установите и запустите Docker Desktop. Убедитесь, что Docker Engine работает.

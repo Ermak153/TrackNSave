@@ -4,12 +4,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using TrackNSave.Server.Data;
-using TrackNSave.Server.Services;
+using TrackNSave.Server.Services.Interfaces;
+using TrackNSave.Server.Services.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
 
 Env.Load();
 
+var apiToken = Environment.GetEnvironmentVariable("API_TOKEN");
 var postgresPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
 var postgresUser = Environment.GetEnvironmentVariable("POSTGRES_USER");
 var postgresDb = Environment.GetEnvironmentVariable("POSTGRES_DB");
@@ -25,12 +27,13 @@ builder.Configuration.AddEnvironmentVariables();
 
 builder.Services.AddControllers();
 
+builder.Services.AddHttpClient();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSQL")));
-
 
 builder.Services.AddCors(options =>
 {
@@ -42,8 +45,13 @@ builder.Services.AddCors(options =>
             .AllowCredentials());
 });
 
-
-builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IPasswordService, PasswordService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IReceiptApiService, ReceiptApiService>();
+builder.Services.AddScoped<IReceiptParserService, ReceiptParserService>();
+builder.Services.AddScoped<IReceiptService, ReceiptService>();
 
 var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!);
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -60,7 +68,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true
         };
 
-        // Чтение токена из HttpOnly cookies
         options.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>
@@ -71,7 +78,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -79,7 +85,6 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     dbContext.Database.EnsureCreated();
 }
-
 
 app.UseCors("AllowLocalhost");
 

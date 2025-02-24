@@ -63,7 +63,13 @@
         </div>
 
         <button type="submit" class="auth__button">
-          {{ isRegistering ? "Зарегистрироваться" : "Войти" }}
+          {{
+            isLoading
+              ? "Загрузка..."
+              : isRegistering
+              ? "Зарегистрироваться"
+              : "Войти"
+          }}
         </button>
       </Form>
 
@@ -83,7 +89,7 @@
   import { AxiosError } from "axios";
   import { Form, Field, ErrorMessage, configure } from "vee-validate";
   import type { FormActions } from "vee-validate";
-  import { ref, computed } from "vue";
+  import { ref, computed, nextTick } from "vue";
   import { useAuth } from "@/composables/useAuth.ts";
   import router from "@/router";
 
@@ -104,29 +110,26 @@
 
   const form = ref<FormActions<FormValues>>();
 
-  const loginSchema = object({
+  const baseSchema = {
     username: string()
       .required("Логин обязателен")
       .matches(/^[a-zA-Z0-9]+$/, "Допускаются только латинские буквы и цифры")
       .min(4, "Логин должен быть длиннее 4 символов")
-      .max(20, "Логин не должен быть короче 20 символов"),
+      .max(20, "Логин не должен быть длиннее 20 символов"),
     password: string()
       .required("Пароль обязателен")
       .min(5, "Пароль должен быть длиннее 5 символов"),
-  });
+  };
 
-  const registerSchema = object({
-    username: string()
-      .required("Логин обязателен")
-      .matches(/^[a-zA-Z0-9]+$/, "Допускаются только латинские буквы и цифры")
-      .min(4, "Логин должен быть длиннее 4 символов")
-      .max(20, "Логин не должен быть короче 20 символов"),
-    email: string()
-      .required("Email обязателен")
-      .email("Введите корректный email"),
-    password: string()
-      .required("Пароль обязателен")
-      .min(5, "Пароль должен быть длиннее 5 символов"),
+  const currentSchema = computed(() => {
+    return isRegistering.value
+      ? object({
+          ...baseSchema,
+          email: string()
+            .required("Email обязателен")
+            .email("Введите корректный email"),
+        })
+      : object(baseSchema);
   });
 
   const isRegistering = ref(false);
@@ -138,22 +141,21 @@
 
   const errorMessage = ref("");
 
-  const currentSchema = computed(() => {
-    return isRegistering.value ? registerSchema : loginSchema;
-  });
-
   function toggleForm() {
     isRegistering.value = !isRegistering.value;
     formData.value = { username: "", email: "", password: "" };
     errorMessage.value = "";
 
-    if (form.value) {
-      form.value.resetForm();
-    }
+    nextTick(() => {
+      form.value?.resetForm();
+    });
   }
+
+  const isLoading = ref(false);
 
   async function handleSubmit() {
     try {
+      isLoading.value = true;
       errorMessage.value = "";
 
       if (isRegistering.value) {
@@ -183,6 +185,7 @@
         } else {
           const status = error.response.status;
           const message = error.response.data?.message || "Произошла ошибка";
+
           switch (status) {
             case 401:
               errorMessage.value = `Неверное имя пользователя или пароль`;
@@ -193,17 +196,22 @@
                 case "Username already taken":
                   errorMessage.value = "Имя пользователя занято";
                   break;
-
                 case "Email already taken":
                   errorMessage.value = "Этот E-mail уже зарегистрирован";
                   break;
               }
+              break;
+
+            default:
+              errorMessage.value = message;
               break;
           }
         }
       } else {
         errorMessage.value = "Непредвиденная ошибка";
       }
+    } finally {
+      isLoading.value = false;
     }
   }
 </script>
@@ -286,7 +294,6 @@
       padding: 10px 15px;
       border-radius: 5px;
       border: 2px solid transparent;
-      cursor: pointer;
       font-size: 16px;
       width: 100%;
       margin-top: 10px;

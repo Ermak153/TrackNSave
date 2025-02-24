@@ -1,40 +1,53 @@
 <template>
-  <div style="display: flex; justify-content: center;">
-    <ReceiptCard :receipt="testReceipt"/>
+  <div class="receipt__container">
+    <div class="receipt__list">
+      <SummaryCard />
+      <h2 class="receipt__history">История</h2>
+      <ReceiptCard
+        v-for="receipt in state.receipts"
+        :key="receipt.id"
+        :receipt="receipt.receiptData"
+      />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-  import ReceiptCard from '@/components/ReceiptCard.vue';
+  import { onMounted } from "vue";
+  import { useReceipts } from "@/composables/useReceipts";
+  import SummaryCard from "@/components/SummaryCard.vue";
+  import ReceiptCard from "@/components/ReceiptCard.vue";
 
-  const testReceipt = {
-    user: "ООО \"ДельтаТорг\"",
-    totalSum: 61449,
-    dateTime: "2024-12-24T14:37:00",
-    retailPlace: "Магазин Быстроном",
-    items: [
-      {
-        name: "Сок САДЫ АЛТАЯ виноград пэт 2л",
-        price: 12797,
-        quantity: 1,
-        sum: 12797
-      },
-      {
-        name: "Молоко БЕЛЫЙ ЗАМОК цельное отборное бзмж 3.8% т/пак 900г",
-        price: 10998,
-        quantity: 1,
-        sum: 10998
-      },
-      {
-        name: "Рожок ВОСХОД сдобный 1с 60г",
-        price: 799,
-        quantity: 4,
-        sum: 3196
-      }
-    ]
-  }
+  const { state, fetchReceipts } = useReceipts();
+
+  onMounted(async () => {
+    await fetchReceipts();
+  });
 </script>
 
-<style lang="scss" scoped>
 
+<style lang="scss" scoped>
+  .receipt {
+    &__container {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      box-sizing: border-box;
+      padding: 0 20px;
+    }
+
+    &__list {
+      width: 100%;
+      max-width: 1280px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      box-sizing: border-box;
+    }
+
+    &__history {
+      color: var(--vt-c-white);
+      margin-bottom: 0;
+    }
+  }
 </style>

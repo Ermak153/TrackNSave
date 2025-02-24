@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using TrackNSave.Server.Models;
 using TrackNSave.Server.Services;
+using TrackNSave.Server.Services.Interfaces;
 
 namespace TrackNSave.Server.Controllers
 {
@@ -13,12 +14,16 @@ namespace TrackNSave.Server.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly UserService _userService;
         private readonly IConfiguration _config;
+        private readonly IUserService _userService;
+        private readonly IPasswordService _passwordService;
+        private readonly IJwtService _jwtService;
 
-        public AuthController(UserService userService, IConfiguration config)
+        public AuthController(IConfiguration config, IUserService userService, IPasswordService passwordService, IJwtService jwtService)
         {
             _userService = userService;
+            _passwordService = passwordService;
+            _jwtService = jwtService;
             _config = config;
         }
 
@@ -28,22 +33,22 @@ namespace TrackNSave.Server.Controllers
             var errorMessage = await _userService.RegisterUserAsync(request.Username, request.Email, request.Password);
             if (errorMessage != null)
             {
-                return Conflict(new { message = errorMessage });
+                return StatusCode(409, new { message = errorMessage });
             }
 
-            return Ok(new { message = "User registered successfully" });
+            return StatusCode(200, new { message = "User registered successfully" });
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             var user = await _userService.GetUserByUsernameAsync(request.Username);
-            if (user == null || !_userService.VerifyPassword(request.Password, user.PasswordHash, user.PasswordSalt))
+            if (user == null || !_passwordService.VerifyPassword(request.Password, user.PasswordHash, user.PasswordSalt))
             {
-                return Unauthorized(new { message = "Invalid username or password" });
+                return StatusCode(401, new { message = "Invalid username or password" });
             }
 
-            string token = GenerateJwtToken(user);
+            string token = _jwtService.GenerateToken(user);
 
             Response.Cookies.Append("auth_token", token, new CookieOptions
             {
@@ -53,34 +58,15 @@ namespace TrackNSave.Server.Controllers
                 Expires = DateTime.UtcNow.AddHours(1)
             });
 
-            return Ok(new { token });
+            return StatusCode(200, new { token });
         }
 
         [HttpPost("logout")]
+        [Authorize]
         public IActionResult Logout()
         {
             Response.Cookies.Delete("auth_token");
-            return Ok(new { message = "Logout successful" });
-        }
-
-        private string GenerateJwtToken(User user)
-        {
-            var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"]!);
-            var claims = new List<Claim>
-            {
-                new(ClaimTypes.Name, user.Username),
-                new(ClaimTypes.Email, user.Email)
-            };
-
-            var credentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
-            var token = new JwtSecurityToken(
-                _config["Jwt:Issuer"],
-                _config["Jwt:Audience"],
-                claims,
-                expires: DateTime.UtcNow.AddHours(1),
-                signingCredentials: credentials);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return StatusCode(200, new { message = "Logout successful" });
         }
     }
 }
