@@ -4,7 +4,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using TrackNSave.Server.Models;
+using TrackNSave.Server.Models.DTOs;
 using TrackNSave.Server.Services;
 using TrackNSave.Server.Services.Interfaces;
 

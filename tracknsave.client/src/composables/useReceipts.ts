@@ -29,7 +29,7 @@ export const useReceipts = () => {
   const fetchReceipts = async () => {
     try {
       const response = await api.get("/receipt/list");
-      state.receipts = response.data;
+      state.receipts = response.data.formattedReceipts;
     } catch {
       state.errorMessage = "Ошибка при загрузке чеков";
     }

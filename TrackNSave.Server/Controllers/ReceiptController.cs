@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using TrackNSave.Server.Models;
 using TrackNSave.Server.Services;
+using TrackNSave.Server.Services.Implementations;
 using TrackNSave.Server.Services.Interfaces;
 
 namespace TrackNSave.Server.Controllers
@@ -45,11 +46,11 @@ namespace TrackNSave.Server.Controllers
                     ReceiptData = JsonSerializer.Deserialize<FormattedReceipt>(r.ReceiptData)
                 }).ToList();
 
-                return Ok(formattedReceipts);
+                return StatusCode(200, new { formattedReceipts });
             }
             catch (Exception)
             {
-                return StatusCode(500, "Error when receiving receipts");
+                return StatusCode(500, new { message = "Error when receiving receipts" });
             }
         }
 
@@ -102,11 +103,15 @@ namespace TrackNSave.Server.Controllers
                 }
             catch (HttpRequestException)
             {
-                return StatusCode(500, "Error when receiving receipt data");
+                return StatusCode(500, new { message = "Error when receiving receipt data" });
+            }
+            catch (ReceiptApiException ex)
+            {
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
             }
             catch (JsonException)
             {
-                return StatusCode(500, "Error processing receipt data");
+                return StatusCode(500, new { message = "Error processing receipt data" });
             }
         }
     }

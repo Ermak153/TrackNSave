@@ -20,7 +20,7 @@
           <div class="modal__body">
             <ModalMain v-if="currentStep === 'main'" @select="setStep" />
             <div v-else class="modal__content">
-              <component :is="currentStepComponent" @close="setStep('main')" />
+              <component :is="currentStepComponent" @close="close"/>
             </div>
           </div>
         </div>

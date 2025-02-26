@@ -2,16 +2,28 @@
   <div class="scanner__wrapper">
     <div class="scanner__container">
       <video
+        v-if="!scanSuccess"
         ref="videoRef"
         class="scanner__video"
         autoplay
         muted
         playsinline
       ></video>
-      <div class="scanner__overlay">
+
+      <div v-if="!scanSuccess" class="scanner__overlay">
         <div class="scanner__region">
           <div class="scanner__line"></div>
         </div>
+      </div>
+
+      <div v-if="scanSuccess" class="scanner__success-screen">
+        <div class="scanner__success-icon">
+          <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="40" cy="40" r="38" stroke="var(--primary-green)" stroke-width="4"/>
+            <path d="M25 40L35 50L55 30" stroke="var(--primary-green)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <p class="scanner__success-message">Чек успешно добавлен</p>
       </div>
     </div>
 
@@ -20,14 +32,30 @@
         {{ errorMessage }}
       </p>
 
-      <button
-        class="scanner__flash-button"
-        :class="{ 'scanner__flash-button--on': isFlashOn }"
-        @click="toggleFlash"
-        :disabled="!hasFlash"
-      >
-        {{ isFlashOn ? "Выключить вспышку" : "Включить вспышку" }}
-      </button>
+      <div v-if="!scanSuccess">
+        <button
+          class="scanner__flash-button"
+          :class="{ 'scanner__flash-button--on': isFlashOn }"
+          @click="toggleFlash"
+          :disabled="!hasFlash"
+        >
+          {{ isFlashOn ? "Выключить вспышку" : "Включить вспышку" }}
+        </button>
+      </div>
+      <div v-else class="scanner__success-buttons">
+        <button
+          class="scanner__button scanner__button--close"
+          @click="closeScanner"
+        >
+          Закрыть
+        </button>
+        <button
+          class="scanner__button scanner__button--add-more"
+          @click="resetAndScanAgain"
+        >
+          Добавить ещё
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -43,7 +71,10 @@
   const errorMessage = ref<string | null>(null);
   const isFlashOn = ref<boolean>(false);
   const hasFlash = ref<boolean>(false);
+  const scanSuccess = ref<boolean>(false);
+
   const { fetchReceipts } = useReceipts();
+  const emit = defineEmits(["close"]);
 
   let qrScanner: QrScanner | null = null;
   let lastScanTime = 0;
@@ -51,6 +82,21 @@
   const stopScanner = () => {
     qrScanner?.stop?.();
     qrScanner?.destroy?.();
+  };
+
+  const closeScanner = () => {
+    emit("close");
+  };
+
+  const resetAndScanAgain = () => {
+    scanSuccess.value = false;
+    errorMessage.value = null;
+    lastScannedCode.value = null;
+    scanResult.value = null;
+
+    setTimeout(async () => {
+      await initScanner();
+    }, 100);
   };
 
   const updateBorderColors = () => {
@@ -96,20 +142,91 @@
 
     try {
       const response = await api.post("/receipt/qrscan", { qrraw: qrCode });
-
-      if (response.status === 200) {
-        scanResult.value = response.data;
-        await fetchReceipts();
-        stopScanner();
-      } else {
-        errorMessage.value = "Ошибка при обработке чека.";
-      }
+      scanResult.value = response.data;
+      await fetchReceipts();
+      stopScanner();
+      scanSuccess.value = true;
+      errorMessage.value = null;
     } catch (error) {
-      errorMessage.value = error instanceof Error ? error.message : String(error);
+      if (error.response) {
+        const serverMessage = error.response.data?.message;
+        switch (error.response.status) {
+          case 202:
+            errorMessage.value = "Данные чека ещё не получены или данные неверны";
+            break;
+          case 400:
+            switch (serverMessage) {
+              case "Invalid QR code data":
+                errorMessage.value = "Некорректный QR-код";
+                break;
+              case "Invalid receipt":
+                errorMessage.value = "Некорректный чек";
+                break;
+              case "Couldn't get receipt details":
+                errorMessage.value = "Не удалось получить данные чека";
+                break;
+              case "Couldn't recognize the receipt":
+                errorMessage.value = "Чек не распознан";
+                break;
+              case "Fiscal data not found":
+                errorMessage.value = "Фискальные данные не найдены";
+                break;
+              default:
+                errorMessage.value = "Некорректные данные QR-кода или данные чека не распознаны";
+            }
+            break;
+          case 401:
+            errorMessage.value = "Пользователь не аутентифицирован";
+            break;
+          case 409:
+            errorMessage.value = "Этот чек уже был добавлен ранее";
+            break;
+          case 429:
+            switch (serverMessage) {
+              case "Exceeded number of requests for this receipt":
+                errorMessage.value = "Превышено количество запросов на получение этого чека";
+                break;
+              case "Too many requests, wait before retrying":
+                errorMessage.value = "Слишком много запросов, подождите, прежде чем повторить попытку";
+                break;
+            }
+            break;
+          case 500:
+            switch (serverMessage) {
+              case "Error when receiving receipt data":
+                errorMessage.value = "Ошибка при получении данных чека";
+                break;
+              case "Error processing receipt data":
+                errorMessage.value = "Ошибка при обработке данных чека";
+                break;
+              case "Unknown response code from API":
+                errorMessage.value = "Неизвестная ошибка при обработке запроса";
+                break;
+            }
+            break;
+          case 502:
+            switch (serverMessage) {
+              case "Network error when contacting the receipt API":
+                errorMessage.value = "Сетевая ошибка при обращении к API";
+                break;
+              case "Receipt API returned error":
+                errorMessage.value = "Неизвестная ошибка при обращении к API";
+                break;
+            }
+            break;
+          case 503:
+            errorMessage.value = "На данный момент данные о чеке недоступны, повторите попытку позже";
+            break;
+          default:
+            errorMessage.value = "Неизвестная ошибка при обработке чека";
+        }
+      } else {
+        errorMessage.value = "Ошибка соединения с сервером.";
+      }
     }
   };
 
-  onMounted(async () => {
+  const initScanner = async () => {
     if (!videoRef.value) return;
 
     qrScanner = new QrScanner(
@@ -137,6 +254,10 @@
     }
 
     updateBorderColors();
+   }
+
+  onMounted(async () => {
+    await initScanner();
   });
 
   onUnmounted(() => {
@@ -210,6 +331,31 @@
       }
     }
 
+    &__success-screen {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--vt-c-dark-blue-gray);
+    }
+
+    &__success-icon {
+      margin-bottom: 20px;
+    }
+
+    &__success-message {
+      color: var(--vt-c-white);
+      font-size: 1.125rem;
+      font-weight: 500;
+      text-align: center;
+      margin: 0;
+    }
+
     &__error-message {
       color: var(--vt-c-light-red);
       margin: 0 0 10px;
@@ -254,6 +400,51 @@
           &:hover {
             background-color: rgba(255, 77, 77, 0.4);
             border: 2px solid var(--vt-c-light-red);
+            transition: 0.2s;
+          }
+        }
+      }
+    }
+
+    &__success-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    &__button {
+      flex: 1;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: 0.2s;
+
+      &--add-more {
+        background: var(--primary-green);
+        color: var(--vt-c-dark-blue-gray);
+        border: 2px solid var(--primary-green);
+
+
+        @media (hover: hover) and (pointer: fine) {
+          &:hover {
+            background: none;
+            color: var(--primary-green);
+            transition: 0.2s;
+          }
+        }
+      }
+
+      &--close {
+        background: transparent;
+        color: var(--vt-c-white);
+        border: 2px solid var(--vt-c-white);
+
+        @media (hover: hover) and (pointer: fine) {
+          &:hover {
+            background: var(--vt-c-white);
+            color: var(--vt-c-dark-blue-gray);
             transition: 0.2s;
           }
         }
