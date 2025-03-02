@@ -22,15 +22,16 @@ namespace TrackNSave.Server.Services.Implementations
             _apiToken = configuration["API_TOKEN"];
         }
 
-        public async Task<JsonElement?> FetchReceiptDataAsync(string qrRaw)
+        public async Task<JsonElement?> FetchReceiptDataAsync(string receiptRaw)
         {
-            var apiRequest = new { qrraw = qrRaw, token = _apiToken };
+            var apiRequest = new { qrraw = receiptRaw, token = _apiToken };
             var requestContent = new StringContent(JsonSerializer.Serialize(apiRequest), Encoding.UTF8, "application/json");
 
             HttpResponseMessage response;
             try
             {
                 response = await _httpClient.PostAsync(_apiUrl, requestContent);
+                Console.WriteLine("Response: " + response);
             }
             catch (HttpRequestException)
             {
@@ -38,6 +39,7 @@ namespace TrackNSave.Server.Services.Implementations
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine("Response content: " + responseContent);
 
             if (!response.IsSuccessStatusCode)
             {

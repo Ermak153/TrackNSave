@@ -54,12 +54,12 @@ namespace TrackNSave.Server.Controllers
             }
         }
 
-        [HttpPost("qrscan")]
-        public async Task<IActionResult> ScanReceipt([FromBody] QrScanRequest request)
+        [HttpPost("add")]
+        public async Task<IActionResult> AddReceipt([FromBody] ReceiptRequest request)
         {
-            if (request == null || string.IsNullOrWhiteSpace(request.Qrraw))
+            if (request == null || string.IsNullOrWhiteSpace(request.ReceiptRaw))
             {
-                return StatusCode(400, new { message = "Invalid QR code data" });
+                return StatusCode(400, new { message = "Invalid receipt data" });
             }
 
             var token = Request.Cookies["auth_token"];
@@ -71,7 +71,7 @@ namespace TrackNSave.Server.Controllers
 
             try
             {
-                var rawData = await _receiptApiService.FetchReceiptDataAsync(request.Qrraw);
+                var rawData = await _receiptApiService.FetchReceiptDataAsync(request.ReceiptRaw);
                 if (!rawData.HasValue)
                 {
                     return StatusCode(400, new { message = "Couldn't get receipt details" });

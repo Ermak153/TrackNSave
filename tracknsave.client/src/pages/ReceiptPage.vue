@@ -15,13 +15,18 @@
 <script setup lang="ts">
   import { onMounted } from "vue";
   import { useReceipts } from "@/composables/useReceipts";
+  import { useAuth } from '@/composables/useAuth.ts';
   import SummaryCard from "@/components/SummaryCard.vue";
   import ReceiptCard from "@/components/ReceiptCard.vue";
 
   const { state, fetchReceipts } = useReceipts();
+  const { isAuthenticated, checkAuthStatus } = useAuth();
 
   onMounted(async () => {
-    await fetchReceipts();
+    await checkAuthStatus();
+    if (isAuthenticated.value) {
+      await fetchReceipts();
+    }
   });
 </script>
 

@@ -3,6 +3,11 @@
 ## 🌍 Language / Язык  
 <details>
   <summary>English</summary>
+  
+## 📄 LICENSE
+
+This repository is licensed under a **No Use License**.  
+You may view the code, but you are **NOT** allowed to use or modify it. See [LICENSE.md](LICENSE.md) for details.  
 
 ## 📥 Installation Guide
 
@@ -49,6 +54,12 @@ After successfully starting the project, you can access the services at the foll
 
 <details>
   <summary>Русский</summary>
+  
+## 📄 ЛИЦЕНЗИЯ
+
+Этот репозиторий распространяется по лицензии **No Use License**.  
+Вы можете **только просматривать** код, но вам **ЗАПРЕЩЕНО** его использовать, изменять или распространять.  
+Подробности смотрите в файле [LICENSE](LICENSE.md).  
 
 ## 📥 Руководство по установке
 

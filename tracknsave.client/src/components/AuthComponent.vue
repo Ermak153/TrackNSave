@@ -104,7 +104,7 @@
 
   interface FormValues {
     username: string;
-    email?: string;
+    email: string;
     password: string;
   }
 

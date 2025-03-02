@@ -32,7 +32,7 @@ namespace TrackNSave.Server.Services.Implementations
             return new FormattedReceipt
             {
                 User = json.TryGetProperty("user", out var user) ? user.GetString() ?? "Неизвестный продавец" : "Неизвестный продавец",
-                TotalSum = json.TryGetProperty("totalSum", out var totalSum) ? totalSum.GetInt32() : 0,
+                TotalSum = json.TryGetProperty("totalSum", out var totalSum) ? totalSum.GetDecimal() : 0m,
                 DateTime = json.TryGetProperty("dateTime", out var dateTime) ? dateTime.GetString() ?? "Неизвестное время" : "Неизвестное время",
                 RetailPlace = json.TryGetProperty("retailPlace", out var retailPlace) ? retailPlace.GetString() ?? "Неизвестное место" : "Неизвестное место",
                 Items = json.TryGetProperty("items", out var items)
@@ -40,9 +40,9 @@ namespace TrackNSave.Server.Services.Implementations
                         .Select(item => new ReceiptItem
                         {
                             Name = item.TryGetProperty("name", out var name) ? name.GetString() ?? "Неизвестный товар" : "Неизвестный товар",
-                            Price = item.TryGetProperty("price", out var price) ? price.GetInt32() : 0,
-                            Quantity = item.TryGetProperty("quantity", out var quantity) ? quantity.GetInt32() : 0,
-                            Sum = item.TryGetProperty("sum", out var sum) ? sum.GetInt32() : 0
+                            Price = item.TryGetProperty("price", out var price) ? price.GetDecimal() : 0m,
+                            Quantity = item.TryGetProperty("quantity", out var quantity) ? quantity.GetDecimal() : 0m,
+                            Sum = item.TryGetProperty("sum", out var sum) ? sum.GetDecimal() : 0m
                         })
                         .ToList()
                     : new List<ReceiptItem>()

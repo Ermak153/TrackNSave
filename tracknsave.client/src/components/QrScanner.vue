@@ -65,10 +65,11 @@
   import api from "@/api/axios";
   import QrScanner from "qr-scanner";
   import { useReceipts } from "@/composables/useReceipts";
+  import { useErrorHandler } from "@/composables/useErrorHandler";
 
+  const { errorMessage, handleApiError } = useErrorHandler();
   const videoRef = ref<HTMLVideoElement | null>(null);
   const scanResult = ref<string | null>(null);
-  const errorMessage = ref<string | null>(null);
   const isFlashOn = ref<boolean>(false);
   const hasFlash = ref<boolean>(false);
   const scanSuccess = ref<boolean>(false);
@@ -136,93 +137,19 @@
 
   const lastScannedCode = ref<string | null>(null);
 
-  const scanReceipt = async (qrCode: string) => {
-    if (lastScannedCode.value === qrCode) return;
-    lastScannedCode.value = qrCode;
+  const scanReceipt = async (receiptRaw: string) => {
+    if (lastScannedCode.value === receiptRaw) return;
+    lastScannedCode.value = receiptRaw;
 
     try {
-      const response = await api.post("/receipt/qrscan", { qrraw: qrCode });
+      const response = await api.post("/receipt/add", { ReceiptRaw: receiptRaw });
       scanResult.value = response.data;
       await fetchReceipts();
       stopScanner();
       scanSuccess.value = true;
       errorMessage.value = null;
     } catch (error) {
-      if (error.response) {
-        const serverMessage = error.response.data?.message;
-        switch (error.response.status) {
-          case 202:
-            errorMessage.value = "Данные чека ещё не получены или данные неверны";
-            break;
-          case 400:
-            switch (serverMessage) {
-              case "Invalid QR code data":
-                errorMessage.value = "Некорректный QR-код";
-                break;
-              case "Invalid receipt":
-                errorMessage.value = "Некорректный чек";
-                break;
-              case "Couldn't get receipt details":
-                errorMessage.value = "Не удалось получить данные чека";
-                break;
-              case "Couldn't recognize the receipt":
-                errorMessage.value = "Чек не распознан";
-                break;
-              case "Fiscal data not found":
-                errorMessage.value = "Фискальные данные не найдены";
-                break;
-              default:
-                errorMessage.value = "Некорректные данные QR-кода или данные чека не распознаны";
-            }
-            break;
-          case 401:
-            errorMessage.value = "Пользователь не аутентифицирован";
-            break;
-          case 409:
-            errorMessage.value = "Этот чек уже был добавлен ранее";
-            break;
-          case 429:
-            switch (serverMessage) {
-              case "Exceeded number of requests for this receipt":
-                errorMessage.value = "Превышено количество запросов на получение этого чека";
-                break;
-              case "Too many requests, wait before retrying":
-                errorMessage.value = "Слишком много запросов, подождите, прежде чем повторить попытку";
-                break;
-            }
-            break;
-          case 500:
-            switch (serverMessage) {
-              case "Error when receiving receipt data":
-                errorMessage.value = "Ошибка при получении данных чека";
-                break;
-              case "Error processing receipt data":
-                errorMessage.value = "Ошибка при обработке данных чека";
-                break;
-              case "Unknown response code from API":
-                errorMessage.value = "Неизвестная ошибка при обработке запроса";
-                break;
-            }
-            break;
-          case 502:
-            switch (serverMessage) {
-              case "Network error when contacting the receipt API":
-                errorMessage.value = "Сетевая ошибка при обращении к API";
-                break;
-              case "Receipt API returned error":
-                errorMessage.value = "Неизвестная ошибка при обращении к API";
-                break;
-            }
-            break;
-          case 503:
-            errorMessage.value = "На данный момент данные о чеке недоступны, повторите попытку позже";
-            break;
-          default:
-            errorMessage.value = "Неизвестная ошибка при обработке чека";
-        }
-      } else {
-        errorMessage.value = "Ошибка соединения с сервером.";
-      }
+      handleApiError(error);
     }
   };
 
@@ -249,12 +176,16 @@
       await qrScanner.start();
       hasFlash.value = await qrScanner.hasFlash();
     } catch (error) {
-      const errorText = error instanceof Error ? error.message : String(error);
-      errorMessage.value = errorText;
+        const errorText = error instanceof Error ? error.message : String(error);
+        if (errorText.includes("Camera not found")) {
+        errorMessage.value = "Камера не найдена. Проверьте её подключение и доступ.";
+      } else {
+        errorMessage.value = errorText;
+      }
     }
 
     updateBorderColors();
-   }
+  }
 
   onMounted(async () => {
     await initScanner();
@@ -425,7 +356,6 @@
         background: var(--primary-green);
         color: var(--vt-c-dark-blue-gray);
         border: 2px solid var(--primary-green);
-
 
         @media (hover: hover) and (pointer: fine) {
           &:hover {

@@ -116,7 +116,7 @@
     }
 
     &__content {
-      border-radius: 12px;
+      // border-radius: 12px;
       width: min(400px, 80vw);
       display: flex;
       flex-direction: column;

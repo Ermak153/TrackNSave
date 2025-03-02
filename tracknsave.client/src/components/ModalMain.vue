@@ -66,6 +66,7 @@
       margin-top: 10px;
       box-sizing: border-box;
       transition: 0.2s;
+      font-weight: 500;
 
       img {
         width: 24px;
@@ -78,6 +79,7 @@
           background: rgba(137, 225, 89, 0.2);
           border: 2px solid var(--vt-c-dark-green);
           transition: 0.2s;
+          color: var(--vt-c-white);
         }
       }
     }
