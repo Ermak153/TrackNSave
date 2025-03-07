@@ -8,6 +8,10 @@
         :key="receipt.id"
         :receipt="receipt.receiptData"
       />
+      <div class="receipt__is-empty" v-if="!state.receipts.length">
+        <span>У вас пока нет добавленных чеков.</span>
+        <span>Добавьте чеки, чтобы они появились здесь.</span>
+      </div>
     </div>
   </div>
 </template>
@@ -53,6 +57,17 @@
     &__history {
       color: var(--vt-c-white);
       margin-bottom: 0;
+    }
+
+    &__is-empty {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      margin-top: 30px;
+      color: var(--vt-c-light-gray);
+      text-align: center;
+      font-size: 18px;
     }
   }
 </style>

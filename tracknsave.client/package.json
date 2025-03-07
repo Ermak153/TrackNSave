@@ -13,8 +13,10 @@
   },
   "dependencies": {
     "@devindex/vue-mask": "^2.0.3",
+    "@zxing/library": "^0.21.3",
     "axios": "^1.7.9",
     "element-plus": "^2.9.3",
+    "jsqr": "^1.4.0",
     "jwt-decode": "^4.0.0",
     "qr-scanner": "^1.4.2",
     "v-mask": "^2.3.0",

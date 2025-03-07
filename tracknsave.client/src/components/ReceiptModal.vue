@@ -34,6 +34,7 @@
   import ModalMain from "@/components/ModalMain.vue";
   import QrScanner from "@/components/QrScanner.vue";
   import EnterFiscal from "@/components/EnterFiscal.vue";
+  import UploadPhoto from "@/components/UploadPhoto.vue";
 
   import type { Component } from "vue";
 
@@ -55,9 +56,13 @@
         currentStepComponent.value = QrScanner;
         break;
       case "enterFiscal":
-      case "enterReceipt":
-      case "uploadPhoto":
         currentStepComponent.value = EnterFiscal;
+        break;
+      case "enterReceipt":
+        currentStepComponent.value = EnterFiscal;
+        break;
+      case "uploadPhoto":
+        currentStepComponent.value = UploadPhoto;
         break;
       default:
         currentStepComponent.value = null;
@@ -106,6 +111,14 @@
       font-size: 30px;
       color: inherit;
       font-weight: 500;
+      transition: 0.2s;
+
+      @media (hover: hover) and (pointer: fine) {
+        &:hover {
+          color: var(--vt-c-light-red);
+          transition: 0.2s;
+        }
+      }
     }
 
     &__body {
@@ -116,7 +129,6 @@
     }
 
     &__content {
-      // border-radius: 12px;
       width: min(400px, 80vw);
       display: flex;
       flex-direction: column;
