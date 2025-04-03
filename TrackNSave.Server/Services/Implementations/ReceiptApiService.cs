@@ -31,7 +31,6 @@ namespace TrackNSave.Server.Services.Implementations
             try
             {
                 response = await _httpClient.PostAsync(_apiUrl, requestContent);
-                Console.WriteLine("Response: " + response);
             }
             catch (HttpRequestException)
             {
@@ -39,7 +38,6 @@ namespace TrackNSave.Server.Services.Implementations
             }
 
             var responseContent = await response.Content.ReadAsStringAsync();
-            Console.WriteLine("Response content: " + responseContent);
 
             if (!response.IsSuccessStatusCode)
             {

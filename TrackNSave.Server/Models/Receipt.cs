@@ -26,6 +26,10 @@ namespace TrackNSave.Server.Models
 
         [Required]
         public string FiscalDocumentNumber { get; set; } = null!;
+        [Required]
+        public string QrCodeData {  get; set; } = null!;
+        [Required]
+        public bool IsVerified { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }

@@ -16,23 +16,60 @@
             </div>
           </div>
         </div>
-        <button
-          class="receipt__toggle"
-          :class="{ 'receipt__toggle--active': isExpanded }"
-          type="button"
-          @click="isExpanded = !isExpanded"
-          :aria-expanded="isExpanded"
-          aria-label="Развернуть детали чека"
-        >
-          <svg
-            class="receipt__toggle-icon"
-            viewBox="0 0 24 24"
-            width="24"
-            height="24"
+        <div class="receipt__actions">
+          <button
+            class="receipt__toggle"
+            :class="{ 'receipt__toggle--active': isExpanded }"
+            type="button"
+            @click="isExpanded = !isExpanded"
+            :aria-expanded="isExpanded"
+            aria-label="Развернуть детали чека"
           >
-            <path d="M7 10l5 5 5-5H7z" fill="currentColor" />
-          </svg>
-        </button>
+            <svg
+              class="receipt__toggle-icon"
+              viewBox="0 0 24 24"
+              width="24"
+              height="24"
+            >
+              <path d="M7 10l5 5 5-5H7z" fill="currentColor" />
+            </svg>
+          </button>
+
+          <div
+            class="receipt__menu-wrapper"
+            ref="menuWrapper"
+            @mouseenter="handleMouseEnter"
+            @mouseleave="handleMouseLeave"
+          >
+            <button
+              class="receipt__menu-btn"
+              @click="toggleMenu"
+              aria-label="Дополнительные действия"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24">
+                <circle cx="12" cy="6" r="2" fill="currentColor" />
+                <circle cx="12" cy="12" r="2" fill="currentColor" />
+                <circle cx="12" cy="18" r="2" fill="currentColor" />
+              </svg>
+            </button>
+
+            <ul v-if="isMenuOpen" class="receipt__menu">
+              <li
+                v-if="props.receipt.isVerified"
+                @click="doAction('Сохранить')"
+              >
+                Сохранить
+              </li>
+              <li
+                v-if="!props.receipt.isVerified"
+                @click="doAction('Изменить')"
+              >
+                Изменить
+              </li>
+              <li @click="doAction('Удалить')">Удалить</li>
+            </ul>
+          </div>
+        </div>
       </header>
 
       <div v-if="isExpanded" class="receipt__content">
@@ -57,12 +94,77 @@
           </li>
         </ul>
       </div>
+
+      <transition name="fade">
+        <div v-if="showDeleteModal" class="delete-modal-overlay">
+          <div class="delete-modal" @click.stop>
+            <div class="delete-modal__content">
+              <h3 class="delete-modal__title">Подтверждение удаления</h3>
+              <p class="delete-modal__text">
+                Вы уверены, что хотите удалить этот чек?
+              </p>
+
+              <div class="delete-modal__actions">
+                <button
+                  class="delete-modal__button delete-modal__button--cancel"
+                  @click="cancelDelete"
+                >
+                  Отмена
+                </button>
+                <button
+                  class="delete-modal__button delete-modal__button--confirm"
+                  @click="confirmDelete"
+                >
+                  Удалить
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </transition>
     </article>
+    <EditReceipt
+      v-model="isModalOpen"
+      :receipt-id="receipt.id"
+      :receipt="{
+        RetailPlace: receipt.retailPlace,
+        DateTime: receipt.dateTime,
+        TotalSum: receipt.totalSum,
+        Items: receipt.items.map((item) => ({
+          Sum: item.sum,
+          Name: item.name,
+          Price: item.price,
+          Quantity: item.quantity,
+        })),
+      }"
+    ></EditReceipt>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { ref } from "vue";
+  import { ref, onMounted, onUnmounted } from "vue";
+  import { useReceipts } from "@/composables/useReceipts";
+  import { useToast } from "@/composables/useToast";
+  import { useErrorHandler } from "@/composables/useErrorHandler";
+  import api from "@/api/axios";
+  import EditReceipt from "@/components/EditReceipt.vue";
+
+  const { deleteReceipt } = useReceipts();
+  const toast = useToast();
+  const { errorMessage, handleApiError } = useErrorHandler();
+
+  const menuWrapper = ref<HTMLElement | null>(null);
+  const closeTimeout = ref<number | null>(null);
+  const isMobile = ref(false);
+  const isMenuOpen = ref(false);
+  const isModalOpen = ref(false);
+  const isExpanded = ref(false);
+  const showDeleteModal = ref(false);
+  const isLoadingPdf = ref(false);
+
+  const props = defineProps<{
+    receipt: ReceiptData;
+  }>();
 
   interface ReceiptItem {
     name: string;
@@ -72,18 +174,22 @@
   }
 
   interface ReceiptData {
+    id: number;
     user: string;
     totalSum: number;
     items: ReceiptItem[];
     dateTime: string;
     retailPlace: string;
+    isVerified: boolean;
   }
 
-  defineProps<{
-    receipt: ReceiptData;
-  }>();
+  const checkMobile = () => {
+    isMobile.value = window.matchMedia("(hover: none)").matches;
+  };
 
-  const isExpanded = ref(false);
+  const componentId = ref(
+    Date.now().toString() + Math.random().toString(36).substr(2, 9)
+  );
 
   const formatDate = (date: string): string => {
     return new Date(date).toLocaleDateString("ru-RU");
@@ -92,6 +198,150 @@
   const formatPrice = (price: number): string => {
     return (price / 100).toFixed(2);
   };
+
+  const toggleMenu = () => {
+    if (isMobile.value) {
+      if (isMenuOpen.value) {
+        isMenuOpen.value = false;
+        return;
+      }
+
+      window.dispatchEvent(
+        new CustomEvent("menu-open", {
+          detail: { id: componentId.value },
+        })
+      );
+
+      isMenuOpen.value = true;
+    }
+  };
+
+  const handleMenuOpen = (event: CustomEvent) => {
+    if (event.detail.id !== componentId.value && isMenuOpen.value) {
+      isMenuOpen.value = false;
+    }
+  };
+
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      (isMenuOpen.value &&
+        menuWrapper.value &&
+        !menuWrapper.value.contains(event.target as Node)) ||
+      (showDeleteModal.value &&
+        event.target &&
+        (event.target as HTMLElement).classList.contains("delete-modal-overlay"))
+    ) {
+      isMenuOpen.value = false;
+      if (showDeleteModal.value) {
+        showDeleteModal.value = false;
+        toast.show("Удаление отменено", "info");
+      }
+    }
+  };
+
+  const handleMouseEnter = () => {
+    if (!isMobile.value) {
+      if (closeTimeout.value) {
+        clearTimeout(closeTimeout.value);
+        closeTimeout.value = null;
+      }
+      isMenuOpen.value = true;
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (!isMobile.value) {
+      closeTimeout.value = setTimeout(() => {
+        isMenuOpen.value = false;
+      }, 150);
+    }
+  };
+
+  const doAction = async (action: string) => {
+    switch (action) {
+      case "Удалить":
+        isMenuOpen.value = false;
+        showDeleteModal.value = true;
+        break;
+      case "Изменить":
+        isMenuOpen.value = false;
+        isModalOpen.value = true;
+        break;
+      case "Сохранить":
+        isMenuOpen.value = false;
+        handleDownloadPdf();
+        break;
+    }
+  };
+
+  const cancelDelete = () => {
+    showDeleteModal.value = false;
+    toast.show("Удаление отменено", "info");
+  };
+
+  const confirmDelete = async () => {
+    try {
+      showDeleteModal.value = false;
+      await deleteReceipt(props.receipt.id);
+      toast.show("Чек успешно удален", "success");
+    } catch (error) {
+      handleApiError(error);
+      toast.show(errorMessage.value ?? "Ошибка при удалении чека", "error");
+    }
+  };
+
+  const handleDownloadPdf = async () => {
+    isLoadingPdf.value = true;
+    try {
+      const response = await api.post(
+        "/receipt/get-pdf",
+        {
+          ReceiptId: props.receipt.id,
+        },
+        {
+          responseType: "blob",
+        }
+      );
+
+      const blob = new Blob([response.data], { type: "application/pdf" });
+
+      const url = window.URL.createObjectURL(blob);
+
+      const fileName = `receipt_${props.receipt.id}.pdf`;
+      const link = document.createElement("a");
+      link.style.display = "none";
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+
+      setTimeout(() => {
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }, 100);
+
+      toast.show("Чек успешно сохранен", "success");
+    } catch (error) {
+      handleApiError(error);
+      toast.show(errorMessage.value ?? "Ошибка при сохранении чека", "error");
+    } finally {
+      isLoadingPdf.value = false;
+    }
+  };
+
+  onMounted(() => {
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    document.addEventListener("click", handleClickOutside);
+    window.addEventListener("menu-open", handleMenuOpen as EventListener);
+  });
+
+  onUnmounted(() => {
+    if (closeTimeout.value) clearTimeout(closeTimeout.value);
+    window.removeEventListener("resize", checkMobile);
+    document.removeEventListener("click", handleClickOutside);
+    window.removeEventListener("menu-open", handleMenuOpen as EventListener);
+  });
 </script>
 
 <style lang="scss" scoped>
@@ -101,6 +351,79 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+
+    &__actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    &__menu {
+      position: absolute;
+      top: 100%;
+      right: -1%;
+      background: var(--vt-c-dark-blue-gray);
+      border-radius: 6px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3), 0 -6px 12px rgba(0, 0, 0, 0.2),
+        0 1px 3px rgba(0, 0, 0, 0.25);
+      list-style: none;
+      margin: 8px 0;
+      padding: 0;
+      min-width: 120px;
+      z-index: 10;
+      box-sizing: border-box;
+
+      li {
+        display: block;
+        box-sizing: border-box;
+        cursor: pointer;
+        color: var(--vt-c-white);
+        font-size: 16px;
+        transition: 0.2s;
+        padding: 12px 18px;
+        border-radius: 6px;
+
+        @media (max-width: 768px) {
+          font-size: 20px;
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+          &:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transition: 0.1s;
+          }
+        }
+      }
+    }
+
+    &__menu-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    &__menu-btn {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      padding: 4px;
+      border: none;
+      border-radius: 6px;
+      background-color: transparent;
+      color: var(--vt-c-white);
+      transition: all 0.2s ease;
+
+      @media (hover: hover) and (pointer: fine) {
+        &:hover {
+          background-color: rgb(255, 255, 255, 0.1);
+        }
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--vt-c-white);
+        outline-offset: 2px;
+      }
+    }
 
     &__card {
       width: 100%;
@@ -266,5 +589,110 @@
         padding: 10px 0;
       }
     }
+  }
+
+  .delete-modal {
+    background: var(--vt-c-dark-blue-gray);
+    border-radius: 12px;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.25);
+
+    &-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.65);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 16px;
+    }
+
+    &__content {
+      padding: 24px;
+    }
+
+    &__title {
+      color: var(--vt-c-white);
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0 0 16px;
+    }
+
+    &__text {
+      color: var(--vt-c-light-gray);
+      font-size: 16px;
+      margin: 0 0 24px;
+      line-height: 1.5;
+    }
+
+    &__actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    &__button {
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &--cancel {
+        background: transparent;
+        color: var(--vt-c-white);
+        border: 2px solid var(--vt-c-white);
+
+        @media (hover: hover) and (pointer: fine) {
+          &:hover {
+            background: var(--vt-c-white);
+            color: var(--vt-c-dark-blue-gray);
+            transition: 0.2s;
+          }
+        }
+      }
+
+      &--confirm {
+        background: var(--vt-c-light-red);
+        color: var(--vt-c-white);
+        border: 2px solid var(--vt-c-light-red);
+
+        @media (hover: hover) and (pointer: fine) {
+          &:hover {
+            background: transparent;
+            color: var(--vt-c-light-red);
+            transition: 0.2s;
+          }
+        }
+      }
+    }
+
+    @media (max-width: 768px) {
+      &__content {
+        padding: 20px;
+      }
+
+      &__button {
+        padding: 12px 16px;
+        flex: 1;
+      }
+    }
+  }
+
+  .fade-enter-active,
+  .fade-leave-active {
+    transition: opacity 0.2s ease;
+  }
+
+  .fade-enter-from,
+  .fade-leave-to {
+    opacity: 0;
   }
 </style>

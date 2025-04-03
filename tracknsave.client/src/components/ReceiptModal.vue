@@ -34,6 +34,7 @@
   import ModalMain from "@/components/ModalMain.vue";
   import QrScanner from "@/components/QrScanner.vue";
   import EnterFiscal from "@/components/EnterFiscal.vue";
+  import EnterReceipt from "@/components/EnterReceipt.vue";
   import UploadPhoto from "@/components/UploadPhoto.vue";
 
   import type { Component } from "vue";
@@ -59,7 +60,7 @@
         currentStepComponent.value = EnterFiscal;
         break;
       case "enterReceipt":
-        currentStepComponent.value = EnterFiscal;
+        currentStepComponent.value = EnterReceipt;
         break;
       case "uploadPhoto":
         currentStepComponent.value = UploadPhoto;
@@ -80,7 +81,7 @@
     padding: 20px;
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    max-height: 80vh;
+    max-height: 85vh;
     max-width: 80vw;
 
     &__overlay {
@@ -112,6 +113,7 @@
       color: inherit;
       font-weight: 500;
       transition: 0.2s;
+      cursor: pointer;
 
       @media (hover: hover) and (pointer: fine) {
         &:hover {
@@ -147,6 +149,7 @@
       font-weight: 500;
       font-size: 16px;
       transition: 0.2;
+      cursor: pointer;
       @media (hover: hover) and (pointer: fine) {
         &:hover {
           background: rgba(137, 225, 89, 0.4);

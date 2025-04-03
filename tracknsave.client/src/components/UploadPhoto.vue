@@ -507,6 +507,7 @@
       font-size: 16px;
       font-weight: 600;
       transition: 0.2s;
+      cursor: pointer;
 
       &--submit {
         background-color: var(--primary-green);
@@ -649,6 +650,7 @@
         font-size: 24px;
         color: var(--vt-c-white);
         transition: 0.2s;
+        cursor: pointer;
 
         @media (hover: hover) and (pointer: fine) {
           &:hover {

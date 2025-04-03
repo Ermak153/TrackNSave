@@ -6,8 +6,13 @@
       <ReceiptCard
         v-for="receipt in state.receipts"
         :key="receipt.id"
-        :receipt="receipt.receiptData"
+        :receipt="{
+          id: receipt.id,
+          isVerified: receipt.isVerified,
+          ...receipt.receiptData
+        }"
       />
+
       <div class="receipt__is-empty" v-if="!state.receipts.length">
         <span>У вас пока нет добавленных чеков.</span>
         <span>Добавьте чеки, чтобы они появились здесь.</span>
@@ -33,7 +38,6 @@
     }
   });
 </script>
-
 
 <style lang="scss" scoped>
   .receipt {
@@ -69,5 +73,44 @@
       text-align: center;
       font-size: 18px;
     }
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 20px;
+    border-radius: 8px;
+    color: var(--vt-c-white);
+    font-size: 16px;
+    font-weight: 600;
+    z-index: 1000;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3), 0 -6px 12px rgba(0, 0, 0, 0.2),
+      0 1px 3px rgba(0, 0, 0, 0.25);
+
+    &--success {
+      background: var(--primary-green);
+      color: var(--vt-c-dark-blue-gray);
+    }
+
+    &--error {
+      background: var(--vt-c-light-red);
+    }
+
+    &--info {
+      background: var(--vt-c-dark-blue-gray);
+    }
+  }
+
+  .toast-enter-active,
+  .toast-leave-active {
+    transition: all 0.3s ease;
+  }
+
+  .toast-enter-from,
+  .toast-leave-to {
+    opacity: 0;
+    transform: translate(-50%, 20px);
   }
 </style>

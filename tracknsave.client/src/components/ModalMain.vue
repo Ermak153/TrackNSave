@@ -67,6 +67,7 @@
       box-sizing: border-box;
       transition: 0.2s;
       font-weight: 500;
+      cursor: pointer;
 
       img {
         width: 24px;

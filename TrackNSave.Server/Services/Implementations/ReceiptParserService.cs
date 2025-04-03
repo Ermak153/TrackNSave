@@ -22,6 +22,23 @@ namespace TrackNSave.Server.Services.Implementations
             };
         }
 
+        public QrCodeData ExtractQrCodeData(JsonElement rawData)
+        {
+            if (!rawData.TryGetProperty("request", out var request))
+            {
+                return new QrCodeData();
+            }
+
+            var qrRaw = request.TryGetProperty("qrraw", out var qrRawProperty)
+                ? qrRawProperty.GetString()
+                : string.Empty;
+
+            return new QrCodeData
+            {
+                RawData = qrRaw
+            };
+        }
+
         public FormattedReceipt FormatReceipt(JsonElement rawData)
         {
             if (!rawData.TryGetProperty("data", out var data) || !data.TryGetProperty("json", out var json))
@@ -29,12 +46,19 @@ namespace TrackNSave.Server.Services.Implementations
                 return null;
             }
 
+            var user = json.TryGetProperty("user", out var userProperty) ? userProperty.GetString() : null;
+            var retailPlace = json.TryGetProperty("retailPlace", out var retailPlaceProperty) ? retailPlaceProperty.GetString() : null;
+
+            var qrCodeData = ExtractQrCodeData(rawData);
+
             return new FormattedReceipt
             {
-                User = json.TryGetProperty("user", out var user) ? user.GetString() ?? "Неизвестный продавец" : "Неизвестный продавец",
+                User = user ?? "Неизвестный продавец",
                 TotalSum = json.TryGetProperty("totalSum", out var totalSum) ? totalSum.GetDecimal() : 0m,
                 DateTime = json.TryGetProperty("dateTime", out var dateTime) ? dateTime.GetString() ?? "Неизвестное время" : "Неизвестное время",
-                RetailPlace = json.TryGetProperty("retailPlace", out var retailPlace) ? retailPlace.GetString() ?? "Неизвестное место" : "Неизвестное место",
+                RetailPlace = !string.IsNullOrWhiteSpace(retailPlace) ? retailPlace
+                             : !string.IsNullOrWhiteSpace(user) ? user
+                             : "Неизвестное место",
                 Items = json.TryGetProperty("items", out var items)
                     ? items.EnumerateArray()
                         .Select(item => new ReceiptItem

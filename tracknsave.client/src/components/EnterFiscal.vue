@@ -441,6 +441,7 @@
       font-size: 16px;
       font-weight: 600;
       transition: 0.2s;
+      cursor: pointer;
 
       &--submit {
         background-color: var(--primary-green);

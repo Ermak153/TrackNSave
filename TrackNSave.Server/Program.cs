@@ -6,6 +6,8 @@ using System.Text;
 using TrackNSave.Server.Data;
 using TrackNSave.Server.Services.Interfaces;
 using TrackNSave.Server.Services.Implementations;
+using DinkToPdf.Contracts;
+using DinkToPdf;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,6 +54,8 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IReceiptApiService, ReceiptApiService>();
 builder.Services.AddScoped<IReceiptParserService, ReceiptParserService>();
 builder.Services.AddScoped<IReceiptService, ReceiptService>();
+builder.Services.AddScoped<IReceiptPdfService, ReceiptPdfService>();
+builder.Services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
 
 var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!);
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

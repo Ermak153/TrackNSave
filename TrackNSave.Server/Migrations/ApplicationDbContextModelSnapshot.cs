@@ -45,6 +45,13 @@ namespace TrackNSave.Server.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<bool>("IsVerified")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("QrCodeData")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("ReceiptData")
                         .IsRequired()
                         .HasColumnType("jsonb");

@@ -9,8 +9,9 @@ interface ReceiptItem {
 }
 
 interface Receipt {
-  id: string;
+  id: number;
   createdAt: string;
+  isVerified: boolean;
   receiptData: {
     user: string;
     totalSum: number;
@@ -35,8 +36,26 @@ export const useReceipts = () => {
     }
   };
 
+  const deleteReceipt = async (receiptId: number) => {
+    try {
+      await api.delete("/receipt/delete", {
+        data: { ReceiptId: receiptId }
+      });
+
+      state.receipts = state.receipts.filter(receipt => receipt.id !== receiptId);
+
+      state.errorMessage = null;
+      return true;
+    } catch (error) {
+      state.errorMessage = "Ошибка при удалении чека";
+      console.error("Delete error:", error);
+      return false;
+    }
+  };
+
   return {
     state,
     fetchReceipts,
+    deleteReceipt,
   };
 };

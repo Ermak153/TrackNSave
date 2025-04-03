@@ -143,6 +143,7 @@ services:
       - ./.env:/app/.env
     environment:
       - ASPNETCORE_URLS=https://0.0.0.0:8081
+      - LD_LIBRARY_PATH=/usr/lib:/usr/local/lib 
     networks:
       - postgres
     depends_on:

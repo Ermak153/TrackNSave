@@ -5,6 +5,7 @@ namespace TrackNSave.Server.Services.Interfaces
 {
     public interface IReceiptParserService
     {
+        QrCodeData ExtractQrCodeData(JsonElement rawData);
         FiscalData ExtractFiscalData(JsonElement rawData);
         FormattedReceipt FormatReceipt(JsonElement rawData);
     }

@@ -5,9 +5,9 @@
       :class="{ 'burger--open': isOpen }"
       @click="toggleMenu"
     >
-      <span></span>
-      <span></span>
-      <span></span>
+      <div></div>
+      <div></div>
+      <div></div>
     </button>
 
     <div class="menu" :class="{ 'menu--open': isOpen }">
@@ -87,10 +87,13 @@
       display: none;
     }
 
-    span {
+    div {
       display: block;
       height: 2px;
+      width: 20px;
       background: var(--vt-c-white);
+      background-color: var(--vt-c-white);
+      color: var(--vt-c-white);
       transition: all 0.3s ease;
     }
   }
