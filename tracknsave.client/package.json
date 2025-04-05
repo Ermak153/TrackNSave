@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@devindex/vue-mask": "^2.0.3",
+    "@vuepic/vue-datepicker": "^11.0.2",
     "axios": "^1.7.9",
     "element-plus": "^2.9.3",
     "html2canvas": "^1.4.1",

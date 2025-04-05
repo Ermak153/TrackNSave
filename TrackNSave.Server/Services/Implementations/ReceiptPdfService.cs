@@ -62,7 +62,7 @@ namespace TrackNSave.Server.Services.Implementations
 
                 return _converter.Convert(doc);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw new ReceiptApiException(500, "Error generating receipt PDF");
             }

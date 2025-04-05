@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using TrackNSave.Server.Models;
 
 namespace TrackNSave.Server.Models.DTOs
@@ -5,6 +6,6 @@ namespace TrackNSave.Server.Models.DTOs
     public class EditReceiptRequest
     {
         public int ReceiptId { get; set; }
-        public FormattedReceipt Receipt { get; set; }
+        public required FormattedReceipt Receipt { get; set; }
     }
 } 

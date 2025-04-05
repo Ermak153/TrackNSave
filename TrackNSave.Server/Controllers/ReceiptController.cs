@@ -164,7 +164,7 @@ namespace TrackNSave.Server.Controllers
                 await _receiptService.SaveReceiptAsync(userGuid, formattedReceipt, fiscalData, qrCodeData, false);
                 return StatusCode(200, new { message = "Receipt was saved successfully" });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, new { message = "Error saving receipt" });
             }
@@ -251,7 +251,7 @@ namespace TrackNSave.Server.Controllers
                 await _receiptService.UpdateReceiptAsync(request.ReceiptId, formattedReceipt);
                 return StatusCode(200, new { message = "Receipt was updated successfully" });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, new { message = "Error updating receipt" });
             }

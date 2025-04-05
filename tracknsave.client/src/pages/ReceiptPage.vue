@@ -1,35 +1,57 @@
 <template>
   <div class="receipt__container">
     <div class="receipt__list">
-      <SummaryCard />
+      <DashBoard
+      :totalReceipts="totalReceipts"
+      :totalAmount="totalAmount"
+      :sort="sortOption"
+      @update:sort="setSortOption"
+      @update:dateRange="updateDateRange" />
       <h2 class="receipt__history">История</h2>
-      <ReceiptCard
-        v-for="receipt in state.receipts"
-        :key="receipt.id"
-        :receipt="{
-          id: receipt.id,
-          isVerified: receipt.isVerified,
-          ...receipt.receiptData
-        }"
-      />
-
-      <div class="receipt__is-empty" v-if="!state.receipts.length">
-        <span>У вас пока нет добавленных чеков.</span>
-        <span>Добавьте чеки, чтобы они появились здесь.</span>
-      </div>
+      <TransitionGroup
+        name="receipt-list"
+        tag="div"
+        class="receipt__cards-container">
+        <ReceiptCard
+          v-for="receipt in filteredReceipts"
+          :key="receipt.id"
+          :receipt="{
+            id: receipt.id,
+            isVerified: receipt.isVerified,
+            ...receipt.receiptData
+          }"
+        />
+      </TransitionGroup>
+      <Transition name="fade">
+        <div class="receipt__is-empty" v-if="!state.receipts.length">
+          <span>У вас пока нет добавленных чеков.</span>
+          <span>Добавьте чеки, чтобы они появились здесь.</span>
+        </div>
+      </Transition>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { onMounted } from "vue";
+  import { computed, onMounted, ref } from "vue";
   import { useReceipts } from "@/composables/useReceipts";
   import { useAuth } from '@/composables/useAuth.ts';
-  import SummaryCard from "@/components/SummaryCard.vue";
+  import DashBoard from "@/components/DashBoard.vue";
   import ReceiptCard from "@/components/ReceiptCard.vue";
 
-  const { state, fetchReceipts } = useReceipts();
+  const { state, sortOption, filteredReceipts, setDateRange, fetchReceipts, setSortOption } = useReceipts();
   const { isAuthenticated, checkAuthStatus } = useAuth();
+
+  const dateRange = ref<[string | null, string | null]>([null, null]);
+  const totalReceipts = computed(() => state.receipts.length);
+  const totalAmount = computed(() =>
+    +(state.receipts.reduce((sum, r) => sum + (r.receiptData.totalSum || 0), 0) / 100).toFixed(2)
+  );
+
+  const updateDateRange = (value: [string | null, string | null]) => {
+    dateRange.value = value;
+    setDateRange(value);
+  };
 
   onMounted(async () => {
     await checkAuthStatus();
@@ -54,13 +76,20 @@
       max-width: 1280px;
       display: flex;
       flex-direction: column;
+    }
+
+    &__cards-container {
+      width: 100%;
+      max-width: 1280px;
+      display: flex;
+      flex-direction: column;
       gap: 15px;
       box-sizing: border-box;
     }
 
     &__history {
       color: var(--vt-c-white);
-      margin-bottom: 0;
+      margin-bottom: 10px;
     }
 
     &__is-empty {
@@ -75,42 +104,29 @@
     }
   }
 
-  .toast {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 12px 20px;
-    border-radius: 8px;
-    color: var(--vt-c-white);
-    font-size: 16px;
-    font-weight: 600;
-    z-index: 1000;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3), 0 -6px 12px rgba(0, 0, 0, 0.2),
-      0 1px 3px rgba(0, 0, 0, 0.25);
-
-    &--success {
-      background: var(--primary-green);
-      color: var(--vt-c-dark-blue-gray);
-    }
-
-    &--error {
-      background: var(--vt-c-light-red);
-    }
-
-    &--info {
-      background: var(--vt-c-dark-blue-gray);
-    }
+  .receipt-list-move,
+  .receipt-list-enter-active,
+  .receipt-list-leave-active {
+    transition: all 0.5s ease;
   }
 
-  .toast-enter-active,
-  .toast-leave-active {
-    transition: all 0.3s ease;
-  }
-
-  .toast-enter-from,
-  .toast-leave-to {
+  .receipt-list-enter-from,
+  .receipt-list-leave-to {
     opacity: 0;
-    transform: translate(-50%, 20px);
+    transform: translateY(30px);
+  }
+
+  .receipt-list-leave-active {
+    position: absolute;
+  }
+
+  .fade-enter-active,
+  .fade-leave-active {
+    transition: opacity 0.5s ease;
+  }
+
+  .fade-enter-from,
+  .fade-leave-to {
+    opacity: 0;
   }
 </style>

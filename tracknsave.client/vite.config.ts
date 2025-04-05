@@ -8,23 +8,28 @@ export default defineConfig({
     plugin(),
     basicSsl()
   ],
-    resolve: {
-        alias: {
-            '@': fileURLToPath(new URL('./src', import.meta.url))
-        }
-    },
-    server: {
-        proxy: {
-          '/api': {
-          target: 'https://tracknsave.server_container:8081',
-          changeOrigin: true,
-          secure: false,
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url))
+    }
+  },
+  server: {
+    host: '0.0.0.0',
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'https://tracknsave.server_container:8081',
+        changeOrigin: true,
+        secure: false,
       }
     },
-      watch: {
-        usePolling: true,
-      },
-        host: '0.0.0.0',
-        port: 5173
+    watch: {
+      usePolling: true,
+    },
+    hmr: {
+      host: "tracknsave.ru",
+      protocol: 'wss',
+      port: 5173
     }
+  }
 })

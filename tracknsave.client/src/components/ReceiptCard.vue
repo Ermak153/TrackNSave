@@ -429,7 +429,7 @@
       width: 100%;
       background-color: var(--vt-c-dark-blue-gray);
       border-radius: 12px;
-      box-shadow: 0 4px 6px -1px rgb(0, 0, 0, 0.1);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
 
     &__header {

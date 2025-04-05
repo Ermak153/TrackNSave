@@ -1,10 +1,10 @@
 <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-  <rect x="12" y="8" width="40" height="48" fill="none" stroke="white" stroke-width="2" rx="4"/>
+  <rect x="12" y="8" width="40" height="48" fill="none" stroke="currentColor" stroke-width="2" rx="4"/>
   
-  <line x1="20" y1="20" x2="44" y2="20" stroke="white" stroke-width="2"/>
-  <line x1="20" y1="28" x2="44" y2="28" stroke="white" stroke-width="2"/>
-  <rect x="24" y="36" width="16" height="16" fill="white" rx="2"/>
+  <line x1="20" y1="20" x2="44" y2="20" stroke="currentColor" stroke-width="2"/>
+  <line x1="20" y1="28" x2="44" y2="28" stroke="currentColor" stroke-width="2"/>
+  <rect x="24" y="36" width="16" height="16" fill="currentColor" rx="2"/>
   <rect x="28" y="40" width="8" height="8" fill="none"/>
   
-  <text x="32" y="16" font-family="monospace" font-size="8" fill="white" text-anchor="middle">FD</text>
+  <text x="32" y="16" font-family="monospace" font-size="8" fill="currentColor" text-anchor="middle">FD</text>
 </svg>
