@@ -9,8 +9,7 @@ export function useAuth() {
     try {
       const response = await api.get('/user/status');
       isAuthenticated.value = response.data.isAuthenticated;
-    } catch (err) {
-      console.error('Ошибка при проверке авторизации:', err);
+    } catch {
       isAuthenticated.value = false;
     }
   };
@@ -28,8 +27,7 @@ export function useAuth() {
     try {
       const response = await api.get('/user/me');
       username.value = response.data.username;
-    } catch (err) {
-      console.error('Ошибка при получении данных пользователя:', err);
+    } catch {
       username.value = null;
     }
   };

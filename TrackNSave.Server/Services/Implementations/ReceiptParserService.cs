@@ -66,7 +66,8 @@ namespace TrackNSave.Server.Services.Implementations
                             Name = item.TryGetProperty("name", out var name) ? name.GetString() ?? "Неизвестный товар" : "Неизвестный товар",
                             Price = item.TryGetProperty("price", out var price) ? price.GetDecimal() : 0m,
                             Quantity = item.TryGetProperty("quantity", out var quantity) ? quantity.GetDecimal() : 0m,
-                            Sum = item.TryGetProperty("sum", out var sum) ? sum.GetDecimal() : 0m
+                            Sum = item.TryGetProperty("sum", out var sum) ? sum.GetDecimal() : 0m,
+                            Category = "Различные товары"
                         })
                         .ToList()
                     : new List<ReceiptItem>()

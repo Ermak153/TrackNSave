@@ -11,22 +11,13 @@ namespace TrackNSave.Server.Controllers
     [ApiController]
     [Route("api/receipt/")]
     [Authorize]
-    public class ReceiptsController : ControllerBase
+    public class ReceiptsController(IUserService userService, IReceiptService receiptService, IReceiptApiService receiptApiService, IReceiptParserService receiptParserService, IReceiptPdfService receiptPdfService) : ControllerBase
     {
-        private readonly IUserService _userService;
-        private readonly IReceiptService _receiptService;
-        private readonly IReceiptApiService _receiptApiService;
-        private readonly IReceiptParserService _receiptParserService;
-        private readonly IReceiptPdfService _receiptPdfService;
-
-        public ReceiptsController(IUserService userService, IReceiptService receiptService, IReceiptApiService receiptApiService, IReceiptParserService receiptParserService, IReceiptPdfService receiptPdfService)
-        {
-            _userService = userService;
-            _receiptService = receiptService;
-            _receiptApiService = receiptApiService;
-            _receiptParserService = receiptParserService;
-            _receiptPdfService = receiptPdfService;
-        }
+        private readonly IUserService _userService = userService;
+        private readonly IReceiptService _receiptService = receiptService;
+        private readonly IReceiptApiService _receiptApiService = receiptApiService;
+        private readonly IReceiptParserService _receiptParserService = receiptParserService;
+        private readonly IReceiptPdfService _receiptPdfService = receiptPdfService;
 
         [HttpGet("list")]
         public async Task<IActionResult> GetUserReceipts()
@@ -34,6 +25,12 @@ namespace TrackNSave.Server.Controllers
             try
             {
                 var token = Request.Cookies["auth_token"];
+
+                if (token == null)
+                {
+                    return StatusCode(404, new { message = "Token not found" });
+                }
+
                 var userId = await _userService.GetUserIdFromJwtAsync(token);
                 if (string.IsNullOrEmpty(userId))
                 {
@@ -66,6 +63,12 @@ namespace TrackNSave.Server.Controllers
             }
 
             var token = Request.Cookies["auth_token"];
+
+            if (token == null)
+            {
+                return StatusCode(404, new { message = "Token not found" });
+            }
+
             var userId = await _userService.GetUserIdFromJwtAsync(token);
             if (string.IsNullOrEmpty(userId))
             {
@@ -124,12 +127,18 @@ namespace TrackNSave.Server.Controllers
         public async Task<IActionResult> AddManualReceipt([FromBody] FormattedReceipt request)
         {
             if (request == null || string.IsNullOrWhiteSpace(request.RetailPlace) ||
-                string.IsNullOrWhiteSpace(request.DateTime) || request.Items == null || !request.Items.Any())
+                string.IsNullOrWhiteSpace(request.DateTime) || request.Items == null || request.Items.Count == 0)
             {
                 return StatusCode(400, new { message = "Invalid receipt" });
             }
 
             var token = Request.Cookies["auth_token"];
+
+            if (token == null)
+            {
+                return StatusCode(404, new { message = "Token not found" });
+            }
+
             var userId = await _userService.GetUserIdFromJwtAsync(token);
             if (string.IsNullOrEmpty(userId))
             {
@@ -179,6 +188,12 @@ namespace TrackNSave.Server.Controllers
             }
 
             var token = Request.Cookies["auth_token"];
+
+            if (token == null)
+            {
+                return StatusCode(404, new { message = "Token not found" });
+            }
+
             var userId = await _userService.GetUserIdFromJwtAsync(token);
             if (string.IsNullOrEmpty(userId))
             {
@@ -211,8 +226,14 @@ namespace TrackNSave.Server.Controllers
             }
 
             var token = Request.Cookies["auth_token"];
+
+            if (token == null)
+            {
+                return StatusCode(404, new { message = "Token not found" });
+            }
+
             var userId = await _userService.GetUserIdFromJwtAsync(token);
-            if (string.IsNullOrEmpty(userId))
+            if (string.IsNullOrEmpty(userId) || token == null)
             {
                 return StatusCode(401, new { message = "User is not authenticated" });
             }
@@ -260,14 +281,18 @@ namespace TrackNSave.Server.Controllers
         [HttpPost("get-pdf")]
         public async Task<IActionResult> GetReceiptPdf([FromBody] ReceiptIdRequest request)
         {
-            Console.WriteLine("request: " + request);
-            Console.WriteLine("request.ReceiptId: " + request.ReceiptId);
             if (request == null || request.ReceiptId <= 0)
             {
                 return StatusCode(400, new { message = "Invalid receipt ID" });
             }
 
             var token = Request.Cookies["auth_token"];
+
+            if (token == null)
+            {
+                return StatusCode(404, new { message = "Token not found" });
+            }
+
             var userId = await _userService.GetUserIdFromJwtAsync(token);
 
             if (string.IsNullOrEmpty(userId))
@@ -280,7 +305,7 @@ namespace TrackNSave.Server.Controllers
                 var userGuid = Guid.Parse(userId);
                 var receipt = await _receiptService.GetReceiptByIdAsync(request.ReceiptId);
 
-                if (request == null || request.ReceiptId <= 0)
+                if (request == null || request.ReceiptId <= 0 || receipt == null)
                 {
                     return StatusCode(404, new { message = "Receipt not found" });
                 }
@@ -323,6 +348,31 @@ namespace TrackNSave.Server.Controllers
             {
                 return StatusCode(500, new { message = "Error generating receipt PDF" });
             }
+        }
+        
+        [HttpPost("product-history")]
+        public async Task<IActionResult> GetProductPriceHistory([FromBody] ReceiptHistoryRequest productName)
+        {
+            var token = Request.Cookies["auth_token"];
+
+            if (token == null)
+            {
+                return StatusCode(404, new { message = "Token not found" });
+            }
+
+            var userId = await _userService.GetUserIdFromJwtAsync(token);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return StatusCode(401, new { message = "User is not authenticated" });
+            }
+
+            if (productName == null || productName.ProductName == null)
+            {
+                return StatusCode(400, new { message = "Product name is required" });
+            }
+
+            var productHistory = await _receiptService.GetProductPriceHistoryAsync(Guid.Parse(userId), productName.ProductName);
+            return StatusCode(200, new { productHistory });
         }
     }
 }

@@ -6,6 +6,7 @@ interface ReceiptItem {
   price: number;
   quantity: number;
   sum: number;
+  category: string;
 }
 
 interface Receipt {
@@ -50,9 +51,8 @@ export const useReceipts = () => {
 
       state.errorMessage = null;
       return true;
-    } catch (error) {
+    } catch {
       state.errorMessage = "Ошибка при удалении чека";
-      console.error("Delete error:", error);
       return false;
     }
   };

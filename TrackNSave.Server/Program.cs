@@ -55,6 +55,7 @@ builder.Services.AddScoped<IReceiptApiService, ReceiptApiService>();
 builder.Services.AddScoped<IReceiptParserService, ReceiptParserService>();
 builder.Services.AddScoped<IReceiptService, ReceiptService>();
 builder.Services.AddScoped<IReceiptPdfService, ReceiptPdfService>();
+builder.Services.AddScoped<IProductHistoryService, ProductHistoryService>();
 builder.Services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
 
 var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!);

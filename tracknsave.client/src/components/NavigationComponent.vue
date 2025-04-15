@@ -4,9 +4,9 @@
       <ul class="navigation__container">
         <li class="navigation__item"><router-link to="/">Главная</router-link></li>
         <li class="navigation__item"><router-link to="/receipt">Чеки</router-link></li>
-        <li class="navigation__item"><router-link to="/profile">Помощь</router-link></li>
         <li class="navigation__item"><router-link to="/profile">Профиль</router-link></li>
-        <li class="navigation__item"><router-link to="/profile">Выйти</router-link></li>
+        <li class="navigation__item"><router-link to="/contacts">Контакты</router-link></li>
+        <li class="navigation__item"><router-link to="/help">Помощь</router-link></li>
       </ul>
     </nav>
   </div>

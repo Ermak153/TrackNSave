@@ -60,7 +60,7 @@
         @drop="onDrop"
         @click="openFileInput"
       >
-        <img :src="uploadIcon" class="upload__area--icon" />
+        <div v-html="uploadIcon" class="upload__area--icon"></div>
         <span
           ><em class="upload__area--highlight">Нажмите,</em> чтобы загрузить
           файл, либо перетащите сюда</span
@@ -163,7 +163,7 @@
 
 <script lang="ts" setup>
   import { ref, computed } from "vue";
-  import uploadIcon from "@/assets/icons/upload.svg";
+  import uploadIcon from "@/assets/icons/upload.svg?raw";
   import fileIcon from "@/assets/icons/file.svg";
   import jsQR from "jsqr";
   import api from "@/api/axios";
@@ -554,8 +554,17 @@
       cursor: pointer;
 
       &--icon {
-        height: 40px;
         width: 40px;
+        height: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
+        padding: 0;
+        svg {
+          width: 100%;
+          height: 100%;
+        }
       }
 
       &--highlight {

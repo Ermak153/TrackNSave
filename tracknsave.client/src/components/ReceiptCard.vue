@@ -78,6 +78,7 @@
             v-for="item in receipt.items"
             :key="item.name"
             class="receipt__item"
+            @click="openPriceChart(item.name)"
           >
             <div class="receipt__item-header">
               <h3 class="receipt__item-title">{{ item.name }}</h3>
@@ -91,6 +92,7 @@
               >
               <span class="receipt__item-quantity">{{ item.quantity }}</span>
             </div>
+            <span>{{ item.category }}</span>
           </li>
         </ul>
       </div>
@@ -138,6 +140,13 @@
         })),
       }"
     ></EditReceipt>
+
+    <PriceHistory
+      v-if="selectedProduct"
+      v-model="chartVisible"
+      :productName="selectedProduct.productName"
+      :priceHistory="selectedProduct.priceHistory"
+    />
   </div>
 </template>
 
@@ -148,6 +157,7 @@
   import { useErrorHandler } from "@/composables/useErrorHandler";
   import api from "@/api/axios";
   import EditReceipt from "@/components/EditReceipt.vue";
+  import PriceHistory from "@/components/PriceHistory.vue";
 
   const { deleteReceipt } = useReceipts();
   const toast = useToast();
@@ -171,6 +181,7 @@
     price: number;
     quantity: number;
     sum: number;
+    category: string;
   }
 
   interface ReceiptData {
@@ -181,6 +192,15 @@
     dateTime: string;
     retailPlace: string;
     isVerified: boolean;
+  }
+
+  interface SelectedProduct {
+    productName: string;
+    priceHistory: {
+      price: number;
+      dateTime: string;
+      retailPlace: string;
+    }[];
   }
 
   const checkMobile = () => {
@@ -326,6 +346,29 @@
       toast.show(errorMessage.value ?? "Ошибка при сохранении чека", "error");
     } finally {
       isLoadingPdf.value = false;
+    }
+  };
+
+  const chartVisible = ref(false);
+  const selectedProduct = ref<SelectedProduct | null>(null);
+
+  const openPriceChart = async (productName: string) => {
+    try {
+      const response = await api.post("/receipt/product-history", {
+        productName: productName
+      });
+
+      const product = response.data?.productHistory?.[0];
+
+      if (product && product.priceHistory.length > 1) {
+        selectedProduct.value = product;
+        chartVisible.value = true;
+      } else {
+        toast.show("История цен не найдена", "info");
+      }
+    } catch (error) {
+      handleApiError(error);
+      toast.show(errorMessage.value ?? "Ошибка при получении истории цен", "error");
     }
   };
 

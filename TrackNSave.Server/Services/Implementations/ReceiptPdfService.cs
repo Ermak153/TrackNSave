@@ -12,16 +12,10 @@ namespace TrackNSave.Server.Services.Implementations
         public int StatusCode { get; }
         public ReceiptPdfException(int statusCode, string message) : base(message) { StatusCode = statusCode; }
     }
-    public class ReceiptPdfService : IReceiptPdfService
+    public class ReceiptPdfService(IConverter converter) : IReceiptPdfService
     {
-        private readonly IConverter _converter;
-        private readonly string _templatePath;
-
-        public ReceiptPdfService(IConverter converter)
-        {
-            _converter = converter;
-            _templatePath = Path.Combine(AppContext.BaseDirectory, "Resources", "Templates", "ReceiptTemplate.html");
-        }
+        private readonly IConverter _converter = converter;
+        private readonly string _templatePath = Path.Combine(AppContext.BaseDirectory, "Resources", "Templates", "ReceiptTemplate.html");
 
         public async Task<byte[]> GenerateReceiptPdfAsync(JsonDocument rawData)
         {
@@ -34,7 +28,7 @@ namespace TrackNSave.Server.Services.Implementations
                 if (rawData.RootElement.TryGetProperty("request", out var qrRequestElement) &&
                     qrRequestElement.TryGetProperty("qrraw", out var qrrawElement))
                 {
-                    string qrData = qrrawElement.GetString();
+                    string qrData = qrrawElement.GetString() ?? string.Empty;
                     if (!string.IsNullOrWhiteSpace(qrData))
                     {
                         templateData["qrData"] = qrData;
@@ -74,8 +68,8 @@ namespace TrackNSave.Server.Services.Implementations
             {
                 var data = new Dictionary<string, object>();
 
-                data["user"] = jsonElement.GetProperty("user").GetString();
-                data["retailPlaceAddress"] = jsonElement.GetProperty("retailPlaceAddress").GetString();
+                data["user"] = jsonElement.TryGetProperty("user", out var userProperty) && userProperty.ValueKind == JsonValueKind.String ? userProperty.GetString() ?? "Неизвестно" : "Неизвестно";
+                data["retailPlaceAddress"] = jsonElement.TryGetProperty("retailPlaceAddress", out var retailPlaceAddressProperty) && retailPlaceAddressProperty.ValueKind == JsonValueKind.String ? retailPlaceAddressProperty.GetString() ?? "Неизвестно" : "Неизвестно";
                 data["requestNumber"] = jsonElement.GetProperty("requestNumber").GetInt32();
                 if (jsonElement.TryGetProperty("operationType", out var operationTypeElement))
                 {
@@ -96,7 +90,8 @@ namespace TrackNSave.Server.Services.Implementations
                 {
                     foreach (var item in itemsElement.EnumerateArray())
                     {
-                        string name = item.GetProperty("name").GetString();
+
+                        string name = item.TryGetProperty("name", out var nameProperty) && nameProperty.ValueKind == JsonValueKind.String ? nameProperty.GetString() ?? "Неизвестно" : "Неизвестно";
                         decimal price = item.GetProperty("price").GetInt32() / 100m;
                         decimal quantity = item.GetProperty("quantity").GetDecimal();
                         decimal sum = item.GetProperty("sum").GetInt32() / 100m;
@@ -126,11 +121,13 @@ namespace TrackNSave.Server.Services.Implementations
                 decimal nds18 = jsonElement.GetProperty("nds18").GetInt32() / 100m;
                 data["nds18"] = nds18.ToString("F2", CultureInfo.InvariantCulture);
 
-                decimal nds10 = jsonElement.GetProperty("nds10").GetInt32() / 100m;
+                decimal nds10 = jsonElement.TryGetProperty("nds10", out var nds10Property) && nds10Property.ValueKind != JsonValueKind.Null
+                ? nds10Property.GetInt32() / 100m
+                : 0;
                 data["nds10"] = nds10.ToString("F2", CultureInfo.InvariantCulture);
 
-                data["operator"] = jsonElement.GetProperty("operator").GetString();
-                data["retailPlace"] = jsonElement.GetProperty("retailPlace").GetString();
+                data["operator"] = jsonElement.TryGetProperty("operator", out var operatorProperty) && operatorProperty.ValueKind == JsonValueKind.String ? operatorProperty.GetString() ?? "Неизвестно" : "Неизвестно";
+                data["retailPlace"] = jsonElement.TryGetProperty("retailPlace", out var retailPlaceProperty) && retailPlaceProperty.ValueKind == JsonValueKind.String ? retailPlaceProperty.GetString() ?? "Неизвестно" : "Неизвестно";
                 data["shiftNumber"] = jsonElement.GetProperty("shiftNumber").GetInt32();
 
                 if (DateTime.TryParse(jsonElement.GetProperty("dateTime").GetString(), out DateTime dateTime))
@@ -139,7 +136,7 @@ namespace TrackNSave.Server.Services.Implementations
                 }
                 else
                 {
-                    data["dateTime"] = jsonElement.GetProperty("dateTime").GetString();
+                    data["dateTime"] = jsonElement.TryGetProperty("dateTime", out var dateTimeProperty) && dateTimeProperty.ValueKind == JsonValueKind.String ? dateTimeProperty.GetString() ?? "Неизвестно" : "Неизвестно";
                 }
 
                 if (jsonElement.TryGetProperty("appliedTaxationType", out var taxTypeElement))
@@ -158,12 +155,12 @@ namespace TrackNSave.Server.Services.Implementations
                     data["taxTypeName"] = taxTypeName;
                 }
 
-                data["kktRegId"] = jsonElement.GetProperty("kktRegId").GetString().Trim();
-                data["numberKkt"] = jsonElement.GetProperty("numberKkt").GetString().Trim();
-                data["fiscalDriveNumber"] = jsonElement.GetProperty("fiscalDriveNumber").GetString();
+                data["kktRegId"] = jsonElement.TryGetProperty("kktRegId", out var kktRegIdProperty) && kktRegIdProperty.ValueKind == JsonValueKind.String && kktRegIdProperty.GetString() is string kktRegIdStr ? kktRegIdStr.Trim() : "Неизвестно";
+                data["numberKkt"] = jsonElement.TryGetProperty("numberKkt", out var numberKktProperty) && numberKktProperty.ValueKind == JsonValueKind.String && numberKktProperty.GetString() is string numberKktStr ? numberKktStr.Trim() : "Неизвестно";
+                data["fiscalDriveNumber"] = jsonElement.TryGetProperty("fiscalDriveNumber", out var fiscalDriveNumberProperty) && fiscalDriveNumberProperty.ValueKind == JsonValueKind.String && fiscalDriveNumberProperty.GetString() is string fiscalDriveNumberStr ? fiscalDriveNumberStr.Trim() : "Неизвестно";
                 data["fiscalDocumentNumber"] = jsonElement.GetProperty("fiscalDocumentNumber").GetInt32();
                 data["fiscalSign"] = jsonElement.GetProperty("fiscalSign").GetInt64();
-                data["userInn"] = jsonElement.GetProperty("userInn").GetString().Trim();
+                data["userInn"] = jsonElement.TryGetProperty("userInn", out var userInnProperty) && userInnProperty.ValueKind == JsonValueKind.String && userInnProperty.GetString() is string userInnStr ? userInnStr.Trim() : "Неизвестно";
 
                 return data;
             }
@@ -200,7 +197,7 @@ namespace TrackNSave.Server.Services.Implementations
             {
                 string result = template;
 
-                if (data.ContainsKey("items") && data["items"] is ICollection<Dictionary<string, object>> items)
+                if (data.TryGetValue("items", out object? value) && value is ICollection<Dictionary<string, object>> items)
                 {
                     string startTag = "{{#items}}";
                     string endTag = "{{/items}}";
@@ -224,13 +221,13 @@ namespace TrackNSave.Server.Services.Implementations
                             itemsContent += itemContent;
                         }
 
-                        result = result.Replace(result.Substring(startPos, endPos + endTag.Length - startPos), itemsContent);
+                        result = result.Replace(result[startPos..(endPos + endTag.Length)], itemsContent);
                     }
                 }
 
                 foreach (var key in data.Keys)
                 {
-                    if (!(data[key] is ICollection<object>))
+                    if (data[key] is not ICollection<object>)
                     {
                         result = result.Replace($"{{{{{key}}}}}", data[key]?.ToString() ?? "");
                     }

@@ -25,7 +25,7 @@ export function useErrorHandler() {
           errorMessage.value = handleForbidden(serverMessage);
           break;
         case 404:
-          errorMessage.value = "Чек не найден";
+          errorMessage.value = handleNotFound(serverMessage);
           break;
         case 409:
           errorMessage.value = "Этот чек уже был добавлен ранее";
@@ -46,7 +46,7 @@ export function useErrorHandler() {
           errorMessage.value = "Неизвестная ошибка при обработке чека";
       }
     } else {
-      errorMessage.value = "Ошибка соединения с сервером.";
+      errorMessage.value = "Ошибка соединения с сервером";
     }
   };
 
@@ -101,6 +101,14 @@ export function useErrorHandler() {
       "User access denied": "Доступ пользователю запрещён",
     };
     return messages[message || ""] || "Внутренняя ошибка сервера";
+  }
+
+  const handleNotFound = (message?: string) => {
+    const messages: Record<string, string> = {
+      "Receipt not found": "Чек не найден",
+      "Token not found": "Токен не найден",
+    };
+    return messages[message || "" || "Внутренняя ошибка сервера"]
   }
 
   return { errorMessage, handleApiError };
