@@ -21,6 +21,27 @@ namespace TrackNSave.Server.Services.Implementations
             _config = config;
         }
 
+        public async Task<User?> GetUserByIdAsync(Guid userId)
+        {
+            return await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+        }
+
+        public async Task<User?> GetUserByUsernameAsync(string username)
+        {
+            return await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Username == username);
+        }
+
+        public async Task<User?> GetUserByEmailAsync(string email)
+        {
+            return await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Email == email);
+        }
+
         public async Task<string?> GetUserIdFromJwtAsync(string token)
         {
             if (string.IsNullOrEmpty(token)) return null;
@@ -53,28 +74,6 @@ namespace TrackNSave.Server.Services.Implementations
             }
         }
 
-        public async Task<User?> GetUserByUsernameAsync(string username)
-        {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
-        }
-
-        public async Task<User?> GetUserByEmailAsync(string email)
-        {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-        }
-
-        public async Task<bool> AddUserAsync(User user)
-        {
-            if (await _context.Users.AnyAsync(u => u.Username == user.Username || u.Email == user.Email))
-            {
-                return false;
-            }
-
-            await _context.Users.AddAsync(user);
-            await _context.SaveChangesAsync();
-            return true;
-        }
-
         public async Task<string?> RegisterUserAsync(string username, string email, string password)
         {
             var existingUser = await GetUserByUsernameAsync(username);
@@ -97,12 +96,32 @@ namespace TrackNSave.Server.Services.Implementations
                 Email = email,
                 PasswordHash = passwordHash,
                 PasswordSalt = passwordSalt,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                RoleId = 1
             };
 
             await AddUserAsync(newUser);
 
             return null;
+        }
+
+        public async Task<bool> AddUserAsync(User user)
+        {
+            try
+            {
+                if (await _context.Users.AnyAsync(u => u.Username == user.Username || u.Email == user.Email))
+                {
+                    return false;
+                }
+
+                await _context.Users.AddAsync(user);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }

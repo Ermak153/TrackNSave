@@ -19,7 +19,7 @@ namespace TrackNSave.Server.Services.Implementations
         public ReceiptApiService(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
-            _apiToken = configuration["API_TOKEN"];
+            _apiToken = configuration["API_TOKEN"] ?? throw new ReceiptApiException(500, "API_TOKEN is not configured"); ;
         }
 
         public async Task<JsonElement?> FetchReceiptDataAsync(string receiptRaw)
@@ -60,7 +60,7 @@ namespace TrackNSave.Server.Services.Implementations
                     case 4:
                         throw new ReceiptApiException(429, "Too many requests, wait before retrying");
                     case 5:
-                        throw new ReceiptApiException(503, "No receipt data available at the moment, retry later.");
+                        throw new ReceiptApiException(503, "No receipt data available at the moment, retry later");
                     case 0:
                         throw new ReceiptApiException(400, "Invalid receipt");
                     default:
@@ -71,6 +71,48 @@ namespace TrackNSave.Server.Services.Implementations
             {
                 throw new JsonException("Failed to deserialize receipt API response");
             }
+        }
+
+        public async Task<List<string>> FetchProductCategoryAsync(List<string> productNames)
+        {
+            var request = new { items = productNames };
+            var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
+            HttpResponseMessage response;
+            try
+            {
+                response = await _httpClient.PostAsync("http://tracknsave.ai:8000/classify_batch", content);
+            }
+            catch
+            {
+                throw new ReceiptApiException(502, "Network error when contacting the receipt API");
+            }
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ReceiptApiException(502, "Receipt API returned error");
+            }
+
+            try
+            {
+                var results = JsonSerializer.Deserialize<List<ClassificationResult>>(responseContent)
+                    ?? throw new ReceiptApiException(500, "Classification service returned empty response"); ;
+
+                return results?.Select(r => r.category).ToList() ?? new List<string>();
+            }
+            catch (JsonException)
+            {
+                throw new ReceiptApiException(500, "Failed to deserialize classification response");
+            }
+        }
+
+        private class ClassificationResult
+        {
+            public required string product { get; set; }
+            public required string category { get; set; }
+            public float confidence { get; set; }
         }
     }
 }

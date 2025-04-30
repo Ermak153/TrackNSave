@@ -60,7 +60,7 @@
         @drop="onDrop"
         @click="openFileInput"
       >
-        <div v-html="uploadIcon" class="upload__area--icon"></div>
+        <div v-html="sanitizedUploadIcon" class="upload__area--icon"></div>
         <span
           ><em class="upload__area--highlight">Нажмите,</em> чтобы загрузить
           файл, либо перетащите сюда</span
@@ -163,6 +163,7 @@
 
 <script lang="ts" setup>
   import { ref, computed } from "vue";
+  import DOMPurify from "dompurify";
   import uploadIcon from "@/assets/icons/upload.svg?raw";
   import fileIcon from "@/assets/icons/file.svg";
   import jsQR from "jsqr";
@@ -185,6 +186,7 @@
     apiError?: string;
   }
 
+  const sanitizedUploadIcon = DOMPurify.sanitize(uploadIcon, { USE_PROFILES: { svg: true } })
   const fileItems = ref<FileItem[]>([]);
   const dragOver = ref(false);
   const fileInput = ref<HTMLInputElement | null>(null);

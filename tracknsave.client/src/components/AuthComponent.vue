@@ -86,14 +86,15 @@
 <script setup lang="ts">
   import api from "@/api/axios";
   import { string, object } from "yup";
-  import { AxiosError } from "axios";
   import { Form, Field, ErrorMessage, configure } from "vee-validate";
   import type { FormActions } from "vee-validate";
   import { ref, computed, nextTick } from "vue";
   import { useAuth } from "@/composables/useAuth.ts";
+  import { useErrorHandler } from "@/composables/useErrorHandler";
   import router from "@/router";
 
-  const { checkAuthStatus } = useAuth();
+  const { login } = useAuth();
+  const { errorMessage, handleApiError } = useErrorHandler();
 
   configure({
     validateOnBlur: true,
@@ -139,12 +140,10 @@
     password: "",
   });
 
-  const errorMessage = ref("");
-
   function toggleForm() {
     isRegistering.value = !isRegistering.value;
     formData.value = { username: "", email: "", password: "" };
-    errorMessage.value = "";
+    errorMessage.value = null;
 
     nextTick(() => {
       form.value?.resetForm();
@@ -156,7 +155,7 @@
   async function handleSubmit() {
     try {
       isLoading.value = true;
-      errorMessage.value = "";
+      errorMessage.value = null
 
       if (isRegistering.value) {
         await api.post("/auth/register", {
@@ -164,52 +163,20 @@
           email: formData.value.email,
           password: formData.value.password,
         });
-        await api.post("/auth/login", {
+        await login({
           username: formData.value.username,
           password: formData.value.password,
         });
-        await checkAuthStatus();
         router.push("/");
       } else {
-        await api.post("/auth/login", {
+        await login({
           username: formData.value.username,
           password: formData.value.password,
         });
-        await checkAuthStatus();
         router.push("/");
       }
-    } catch (error: unknown) {
-      if (error instanceof AxiosError) {
-        if (!error.response) {
-          errorMessage.value = "Ошибка сети. Проверьте подключение.";
-        } else {
-          const status = error.response.status;
-          const message = error.response.data?.message || "Произошла ошибка";
-
-          switch (status) {
-            case 401:
-              errorMessage.value = `Неверное имя пользователя или пароль`;
-              break;
-
-            case 409:
-              switch (message) {
-                case "Username already taken":
-                  errorMessage.value = "Имя пользователя занято";
-                  break;
-                case "Email already taken":
-                  errorMessage.value = "Этот E-mail уже зарегистрирован";
-                  break;
-              }
-              break;
-
-            default:
-              errorMessage.value = message;
-              break;
-          }
-        }
-      } else {
-        errorMessage.value = "Непредвиденная ошибка";
-      }
+    } catch (error) {
+      handleApiError(error);
     } finally {
       isLoading.value = false;
     }

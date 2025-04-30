@@ -11,13 +11,14 @@ namespace TrackNSave.Server.Controllers
     [ApiController]
     [Route("api/receipt/")]
     [Authorize]
-    public class ReceiptsController(IUserService userService, IReceiptService receiptService, IReceiptApiService receiptApiService, IReceiptParserService receiptParserService, IReceiptPdfService receiptPdfService) : ControllerBase
+    public class ReceiptsController(IUserService userService, IReceiptService receiptService, IReceiptApiService receiptApiService, IReceiptParserService receiptParserService, IReceiptPdfService receiptPdfService, IProductHistoryService productHistoryService) : ControllerBase
     {
         private readonly IUserService _userService = userService;
         private readonly IReceiptService _receiptService = receiptService;
         private readonly IReceiptApiService _receiptApiService = receiptApiService;
         private readonly IReceiptParserService _receiptParserService = receiptParserService;
         private readonly IReceiptPdfService _receiptPdfService = receiptPdfService;
+        private readonly IProductHistoryService _productHistoryService = productHistoryService;
 
         [HttpGet("list")]
         public async Task<IActionResult> GetUserReceipts()
@@ -83,7 +84,7 @@ namespace TrackNSave.Server.Controllers
                     return StatusCode(400, new { message = "Couldn't get receipt details" });
                 }
 
-                var formattedReceipt = _receiptParserService.FormatReceipt(rawData.Value);
+                var formattedReceipt = await _receiptParserService.FormatReceiptAsync(rawData.Value);
 
                 if (formattedReceipt == null)
                 {
@@ -116,6 +117,18 @@ namespace TrackNSave.Server.Controllers
             catch (ReceiptApiException ex)
             {
                 return StatusCode(ex.StatusCode, new { message = ex.Message });
+            }
+            catch (ReceiptParserException ex)
+            {
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
+            }
+            catch (ReceiptServiceException ex)
+            {
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
+            }
+            catch (ArgumentNullException ex)
+            {
+                return StatusCode(400, new { message = ex.Message });
             }
             catch (JsonException)
             {
@@ -320,6 +333,11 @@ namespace TrackNSave.Server.Controllers
                     return StatusCode(400, new { message = "QR code data not available for this receipt" });
                 }
 
+                if (receipt.IsVerified == false)
+                {
+                    return StatusCode(400, new { message = "Only verified receipts can be download" });
+                }
+
                 var rawData = await _receiptApiService.FetchReceiptDataAsync(receipt.QrCodeData);
 
                 if (!rawData.HasValue)
@@ -371,7 +389,7 @@ namespace TrackNSave.Server.Controllers
                 return StatusCode(400, new { message = "Product name is required" });
             }
 
-            var productHistory = await _receiptService.GetProductPriceHistoryAsync(Guid.Parse(userId), productName.ProductName);
+            var productHistory = await _productHistoryService.GetProductPriceHistoryAsync(Guid.Parse(userId), productName.ProductName);
             return StatusCode(200, new { productHistory });
         }
     }

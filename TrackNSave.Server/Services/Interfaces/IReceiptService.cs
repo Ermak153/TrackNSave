@@ -11,6 +11,5 @@ namespace TrackNSave.Server.Services.Interfaces
         Task<Receipt?> GetReceiptByIdAsync(int receiptId);
         Task<bool> DeleteReceiptAsync(int receiptId);
         Task<bool> UpdateReceiptAsync(int receiptId, FormattedReceipt formattedReceipt);
-        Task<List<ProductPriceHistory>> GetProductPriceHistoryAsync(Guid userId, string productName);
     }
 }

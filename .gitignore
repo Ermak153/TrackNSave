@@ -4,4 +4,4 @@
 .github
 bin/
 obj/
-tracknsave.ai/
+tracknsave.ai/models/xlm-roberta-large/model.safetensors

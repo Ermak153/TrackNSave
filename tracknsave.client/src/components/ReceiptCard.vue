@@ -92,7 +92,7 @@
               >
               <span class="receipt__item-quantity">{{ item.quantity }}</span>
             </div>
-            <span>{{ item.category }}</span>
+            <span v-if="item.category" class="receipt__item-category">{{ item.category }}</span>
           </li>
         </ul>
       </div>
@@ -604,6 +604,28 @@
       gap: 6px;
       color: var(--vt-c-blue-gray);
       font-size: 14px;
+    }
+
+    &__item-category {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 6px;
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--primary-green);
+      background-color: rgba(137, 225, 89, 0.05);
+      border: 1px solid var(--primary-green);
+      margin-top: 8px;
+    }
+
+    &__item-category::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--primary-green);
+      margin-right: 8px;
     }
 
     @media (max-width: 768px) {

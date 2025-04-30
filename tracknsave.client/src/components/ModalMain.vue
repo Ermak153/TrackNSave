@@ -14,6 +14,7 @@
 
 <script setup lang="ts">
   import { defineEmits } from "vue";
+  import DOMPurify from "dompurify";
   import qrcode from "@/assets/icons/qr-code.svg?raw";
   import fd from "@/assets/icons/fd.svg?raw";
   import receipt from "@/assets/icons/receipt.svg?raw";
@@ -22,10 +23,10 @@
   const emit = defineEmits(["select"]);
 
   const options = [
-    { key: "scanQR", label: "Сканировать QR-код", icon: qrcode },
-    { key: "enterFiscal", label: "Ввести фискальные данные", icon: fd },
-    { key: "enterReceipt", label: "Ввести чек вручную", icon: receipt },
-    { key: "uploadPhoto", label: "Загрузить фото", icon: upload },
+    { key: "scanQR", label: "Сканировать QR-код", icon: DOMPurify.sanitize(qrcode, { USE_PROFILES: { svg: true } }) },
+    { key: "enterFiscal", label: "Ввести фискальные данные", icon: DOMPurify.sanitize(fd, { USE_PROFILES: { svg: true } }) },
+    { key: "enterReceipt", label: "Ввести чек вручную", icon: DOMPurify.sanitize(receipt, { USE_PROFILES: { svg: true } }) },
+    { key: "uploadPhoto", label: "Загрузить фото", icon: DOMPurify.sanitize(upload, { USE_PROFILES: { svg: true } }) },
   ];
 
   const selectOption = (key: string) => {

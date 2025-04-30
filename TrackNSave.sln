@@ -9,6 +9,8 @@ Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "tracknsave.client", "trackn
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{1D245847-1701-4CC0-B67E-547BA0F187F6}"
 EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "tracknsave.ai", "tracknsave.ai\tracknsave.ai.pyproj", "{F2A30683-6C43-4577-9FF6-60AC22E334D5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,8 +31,13 @@ Global
 		{1D245847-1701-4CC0-B67E-547BA0F187F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1D245847-1701-4CC0-B67E-547BA0F187F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1D245847-1701-4CC0-B67E-547BA0F187F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2A30683-6C43-4577-9FF6-60AC22E334D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2A30683-6C43-4577-9FF6-60AC22E334D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {57356637-9699-4BD0-8287-07934CDD0CFD}
 	EndGlobalSection
 EndGlobal

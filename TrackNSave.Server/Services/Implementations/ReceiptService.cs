@@ -8,10 +8,15 @@ using DinkToPdf.Contracts;
 
 namespace TrackNSave.Server.Services.Implementations
 {
+    public class ReceiptServiceException : Exception
+    {
+        public int StatusCode { get; }
+        public ReceiptServiceException(int statusCode, string message) : base(message) { StatusCode = statusCode; }
+    }
+
     public class ReceiptService : IReceiptService
     {
         private readonly ApplicationDbContext _context;
-        
 
         public ReceiptService(ApplicationDbContext context, IConverter converter)
         {
@@ -37,20 +42,31 @@ namespace TrackNSave.Server.Services.Implementations
 
         public async Task SaveReceiptAsync(Guid userId, FormattedReceipt formattedReceipt, FiscalData fiscalData, QrCodeData qrCodeData, bool isVerified)
         {
-            var receipt = new Receipt
+            try
             {
-                UserId = userId,
-                ReceiptData = JsonSerializer.Serialize(formattedReceipt),
-                FiscalSign = fiscalData.FiscalSign,
-                FiscalDriveNumber = fiscalData.FiscalDriveNumber,
-                FiscalDocumentNumber = fiscalData.FiscalDocumentNumber,
-                QrCodeData = qrCodeData.RawData,
-                CreatedAt = DateTime.UtcNow,
-                IsVerified = isVerified
-            };
+                if (formattedReceipt == null) throw new ReceiptServiceException(400, "Formatted receipt data cannot be null");
+                if (fiscalData == null) throw new ReceiptServiceException(400, "Fiscal data cannot be null");
+                if (qrCodeData == null) throw new ReceiptServiceException(400, "QR code data cannot be null");
 
-            _context.Receipts.Add(receipt);
-            await _context.SaveChangesAsync();
+                var receipt = new Receipt
+                {
+                    UserId = userId,
+                    ReceiptData = JsonSerializer.Serialize(formattedReceipt),
+                    FiscalSign = fiscalData.FiscalSign,
+                    FiscalDriveNumber = fiscalData.FiscalDriveNumber,
+                    FiscalDocumentNumber = fiscalData.FiscalDocumentNumber,
+                    QrCodeData = qrCodeData.RawData,
+                    CreatedAt = DateTime.UtcNow,
+                    IsVerified = isVerified
+                };
+
+                _context.Receipts.Add(receipt);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                throw new ReceiptServiceException(500, "An unexpected error occurred while saving the receipt");
+            }
         }
 
         public async Task<Receipt?> GetReceiptByIdAsync(int receiptId)
@@ -60,83 +76,42 @@ namespace TrackNSave.Server.Services.Implementations
 
         public async Task<bool> DeleteReceiptAsync(int receiptId)
         {
-            var receipt = await _context.Receipts.FirstOrDefaultAsync(r => r.Id == receiptId);
-            if (receipt == null)
+            try
             {
-                return false;
-            }
+                var receipt = await _context.Receipts.FirstOrDefaultAsync(r => r.Id == receiptId);
+                if (receipt == null)
+                {
+                    return false;
+                }
 
-            _context.Receipts.Remove(receipt);
-            await _context.SaveChangesAsync();
-            return true;
+                _context.Receipts.Remove(receipt);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                throw new ReceiptServiceException(500, "An unexpected error occurred while deleting the receipt");
+            }
         }
 
         public async Task<bool> UpdateReceiptAsync(int receiptId, FormattedReceipt formattedReceipt)
         {
-            var receipt = await _context.Receipts.FirstOrDefaultAsync(r => r.Id == receiptId);
-            if (receipt == null)
+            try
             {
-                return false;
-            }
-
-            receipt.ReceiptData = JsonSerializer.Serialize(formattedReceipt);
-            await _context.SaveChangesAsync();
-            return true;
-        }
-
-        public async Task<List<ProductPriceHistory>> GetProductPriceHistoryAsync(Guid userId, string productName)
-        {
-            var receipts = await GetUserReceiptsAsync(userId);
-            var productGroups = new Dictionary<string, ProductPriceHistory>();
-            const double similarityThreshold = 0.8;
-
-            foreach (var receipt in receipts)
-            {
-                var formattedReceipt = JsonSerializer.Deserialize<FormattedReceipt>(receipt.ReceiptData);
-                if (formattedReceipt == null) continue;
-
-                var uniquePricesInReceipt = new HashSet<decimal>();
-
-                var matchingItems = formattedReceipt.Items
-                    .Where(item => StringSimilarity.CalculateSimilarity(productName, item.Name) >= similarityThreshold)
-                    .OrderByDescending(item => StringSimilarity.CalculateSimilarity(productName, item.Name))
-                    .ToList();
-
-                foreach (var item in matchingItems)
+                var receipt = await _context.Receipts.FirstOrDefaultAsync(r => r.Id == receiptId);
+                if (receipt == null)
                 {
-                    if (!uniquePricesInReceipt.Add(item.Price))
-                        continue;
-
-                    var bestMatch = productGroups.Keys
-                        .Select(existingName => new { Name = existingName, Similarity = StringSimilarity.CalculateSimilarity(existingName, item.Name) })
-                        .OrderByDescending(x => x.Similarity)
-                        .FirstOrDefault();
-
-                    string groupName;
-                    if (bestMatch != null && bestMatch.Similarity >= similarityThreshold)
-                    {
-                        groupName = bestMatch.Name;
-                    }
-                    else
-                    {
-                        groupName = item.Name;
-                        productGroups[groupName] = new ProductPriceHistory
-                        {
-                            ProductName = groupName,
-                            PriceHistory = new List<ProductPriceRecord>()
-                        };
-                    }
-
-                    productGroups[groupName].PriceHistory.Add(new ProductPriceRecord
-                    {
-                        Price = item.Price,
-                        DateTime = formattedReceipt.DateTime,
-                        RetailPlace = formattedReceipt.RetailPlace
-                    });
+                    return false;
                 }
-            }
 
-            return productGroups.Values.ToList();
+                receipt.ReceiptData = JsonSerializer.Serialize(formattedReceipt);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                throw new ReceiptServiceException(500, "An unexpected error occurred while updating the receipt");
+            }
         }
     }
 }

@@ -15,12 +15,12 @@ namespace TrackNSave.Server.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
-        private readonly IJwtService _jwtService;
+        private readonly ITokenService _tokenService;
 
-        public UserController(IUserService userService, IJwtService jwtService)
+        public UserController(IUserService userService, ITokenService tokenService)
         {
             _userService = userService;
-            _jwtService = jwtService;
+            _tokenService = tokenService;
         }
 
         [HttpGet("status")]
@@ -29,16 +29,16 @@ namespace TrackNSave.Server.Controllers
             var token = Request.Cookies["auth_token"];
             if (string.IsNullOrEmpty(token))
             {
-                return StatusCode(200, new { isAuthenticated = false });
+                return StatusCode(401, new { isAuthenticated = false });
             }
 
-            if (_jwtService.ValidateToken(token))
+            if (_tokenService.ValidateToken(token))
             {
                 return StatusCode(200, new { isAuthenticated = true });
             }
 
             Response.Cookies.Delete("auth_token");
-            return StatusCode(200, new { isAuthenticated = false });
+            return StatusCode(401, new { isAuthenticated = false });
         }
 
         [HttpGet("me")]
@@ -57,7 +57,14 @@ namespace TrackNSave.Server.Controllers
                 return StatusCode(404, new { message = "User was not found" });
             }
 
-            return StatusCode(200, new { username = user.Username, email = user.Email });
+            var roleName = user.Role?.Name ?? "User";
+
+            return StatusCode(200, new
+            {
+                username = user.Username,
+                email = user.Email,
+                role = roleName
+            });
         }
     }
 }

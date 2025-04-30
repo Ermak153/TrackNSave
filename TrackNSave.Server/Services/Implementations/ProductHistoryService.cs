@@ -5,6 +5,12 @@ using TrackNSave.Server.Utils;
 
 namespace TrackNSave.Server.Services.Implementations
 {
+    public class ProductHistoryException : Exception
+    {
+        public int StatusCode { get; }
+        public ProductHistoryException(int statusCode, string message) : base(message) { StatusCode = statusCode; }
+    }
+
     public class ProductHistoryService : IProductHistoryService
     {
         private readonly IReceiptService _receiptService;
@@ -17,6 +23,12 @@ namespace TrackNSave.Server.Services.Implementations
         public async Task<List<ProductPriceHistory>> GetProductPriceHistoryAsync(Guid userId, string productName)
         {
             var receipts = await _receiptService.GetUserReceiptsAsync(userId);
+
+            if (receipts == null || !receipts.Any())
+            {
+                throw new ProductHistoryException(404, "Receipts not found");
+            }
+
             var productGroups = new Dictionary<string, ProductPriceHistory>();
             const double similarityThreshold = 0.8;
 

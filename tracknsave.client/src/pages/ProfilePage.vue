@@ -124,7 +124,7 @@
 </template>
 
 <script setup lang="ts">
-// Пока что пустой, так как используем тестовые данные
+
 </script>
 
 <style lang="scss" scoped>

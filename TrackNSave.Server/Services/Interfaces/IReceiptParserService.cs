@@ -7,6 +7,6 @@ namespace TrackNSave.Server.Services.Interfaces
     {
         QrCodeData ExtractQrCodeData(JsonElement rawData);
         FiscalData ExtractFiscalData(JsonElement rawData);
-        FormattedReceipt FormatReceipt(JsonElement rawData);
+        Task<FormattedReceipt> FormatReceiptAsync(JsonElement rawData);
     }
 }

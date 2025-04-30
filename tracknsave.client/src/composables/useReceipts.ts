@@ -72,7 +72,6 @@ export const useReceipts = () => {
       });
     }
 
-    // Применяем сортировку
     switch (sortOption.value) {
       case "Сначала новые":
         return filtered.sort((a, b) =>

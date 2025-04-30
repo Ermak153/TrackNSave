@@ -43,10 +43,9 @@ services:
       PGDATA: "/var/lib/postgresql/data/pgdata"
       TZ: UTC
     volumes:
-      - ./initdb:/docker-entrypoint-initdb.d
       - tracknsave-data:/var/lib/postgresql/data
       - postgres-backups:/backups
-      - ./migrations:/migrations
+      - ./TrackNSave.Server/Migrations:/migrations
     ports:
       - "5432:5432"
     healthcheck:
@@ -102,9 +101,6 @@ services:
       DATA_SOURCE_URI: "postgres:5432/${POSTGRES_DB}?sslmode=disable"
       DATA_SOURCE_USER: ${POSTGRES_USER}
       DATA_SOURCE_PASS: ${POSTGRES_PASSWORD}
-      PG_EXPORTER_EXTEND_QUERY_PATH: "/etc/postgres_exporter/queries.yaml"
-    volumes:
-      - ./queries.yaml:/etc/postgres_exporter/queries.yaml:ro
     ports:
       - "9187:9187"
     restart: unless-stopped
@@ -162,6 +158,29 @@ services:
     volumes:
       - ./tracknsave.client:/app
       - /app/node_modules
+    networks:
+      - postgres
+    depends_on:
+      - tracknsave.server
+
+  tracknsave.ai:
+    container_name: tracknsave.ai_container
+    build:
+      context: .
+      dockerfile: tracknsave.ai/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    volumes:
+      - ./tracknsave.ai:/app
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
     networks:
       - postgres
     depends_on:
