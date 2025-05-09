@@ -18,7 +18,8 @@ var postgresPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
 var postgresUser = Environment.GetEnvironmentVariable("POSTGRES_USER");
 var postgresDb = Environment.GetEnvironmentVariable("POSTGRES_DB");
 
-var connectionString = $"Host=host.docker.internal;Database={postgresDb};Username={postgresUser};Password={postgresPassword}";
+//var connectionString = $"Host=host.docker.internal;Database={postgresDb};Username={postgresUser};Password={postgresPassword}";
+var connectionString = "Host=host.docker.internal;Database=TrackNSave;Username=postgres_track;Password=wef4fESfbe34gdfws65790rgeSREfd";
 var jwtAudience = $"{postgresDb}Users";
 
 Environment.SetEnvironmentVariable("ConnectionStrings__PostgreSQL", connectionString);
@@ -55,6 +56,7 @@ builder.Services.AddScoped<IReceiptService, ReceiptService>();
 builder.Services.AddScoped<IReceiptPdfService, ReceiptPdfService>();
 builder.Services.AddScoped<IProductHistoryService, ProductHistoryService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IAvatarService, AvatarService>();
 builder.Services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
 
 var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!);

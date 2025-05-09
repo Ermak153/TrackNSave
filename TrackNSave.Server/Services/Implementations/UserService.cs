@@ -8,6 +8,12 @@ using System.Text;
 
 namespace TrackNSave.Server.Services.Implementations
 {
+    public class UserServiceException : Exception
+    {
+        public int StatusCode { get; }
+        public UserServiceException(int statusCode, string message) : base(message) { StatusCode = statusCode; }
+    }
+
     public class UserService : IUserService
     {
         private readonly ApplicationDbContext _context;
@@ -121,6 +127,31 @@ namespace TrackNSave.Server.Services.Implementations
             catch (Exception)
             {
                 return false;
+            }
+        }
+
+        public async Task UpdateUserAvatarAsync(User user)
+        {
+            try
+            {
+                var existingUser = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Id == user.Id);
+
+                if (existingUser == null)
+                {
+                    throw new UserServiceException(404, "User was not found");
+                }
+
+                _context.Entry(existingUser).CurrentValues.SetValues(new
+                {
+                    user.AvatarFileName,
+                });
+
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                throw new UserServiceException(500, "Error updating user avatar");
             }
         }
     }

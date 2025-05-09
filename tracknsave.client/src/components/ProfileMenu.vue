@@ -9,7 +9,7 @@
       <ElAvatar
         class="profile__avatar"
         :size="50"
-        src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
+        :src="avatarUrl || defaultAvatar"
       />
     </router-link>
     <Transition name="profile__menu-fade">
@@ -33,9 +33,13 @@
 
 <script setup lang="ts">
   import { useAuth } from "@/composables/useAuth.ts";
+  import { useUsers } from "@/composables/useUsers";
   import { ElAvatar } from "element-plus";
   import { ref, onMounted } from "vue";
-  const { isAuthenticated, logout, getUserInfo, username } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
+  const { getUserInfo, getAvatar, username, avatarUrl } = useUsers();
+
+  const defaultAvatar = "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png";
 
   let isMenuVisible = ref(false);
 
@@ -46,6 +50,7 @@
 
   onMounted(async () => {
     await getUserInfo();
+    await getAvatar();
   });
 </script>
 
@@ -105,6 +110,10 @@
       transform-origin: 80% 20%;
       pointer-events: none;
     }
+  }
+
+  .el-avatar {
+    background: none;
   }
 
   .avatar {

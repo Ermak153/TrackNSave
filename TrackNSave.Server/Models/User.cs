@@ -22,10 +22,13 @@ namespace TrackNSave.Server.Models
         [Required]
         public byte[] PasswordSalt { get; set; } = null!;
 
+        [Required]
         public int RoleId { get; set; }
 
         [ForeignKey("RoleId")]
         public Role Role { get; set; } = null!;
+
+        public string? AvatarFileName { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

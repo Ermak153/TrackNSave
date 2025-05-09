@@ -3,9 +3,27 @@
     <div class="profile__container">
       <div class="profile__header">
         <div class="profile__avatar">
-          <div class="profile__avatar-inner">
-            <span class="profile__avatar-text">ИИ</span>
+          <div class="profile__avatar-inner" @click="triggerFileInput">
+            <img :src="avatarUrl || defaultAvatar" alt="Аватар пользователя" class="profile__avatar-image" />
+            <input
+              ref="fileInput"
+              type="file"
+              accept="image/*"
+              class="profile__avatar-input"
+              @change="handleFileSelect"
+            />
+            <div class="profile__avatar-overlay">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+            </div>
           </div>
+          <button v-if="avatarUrl" class="profile__avatar-delete" @click="handleDeleteAvatar">
+            Удалить аватар
+          </button>
+          <p v-if="uploadError" class="profile__avatar-error">{{ uploadError }}</p>
         </div>
         <div class="profile__info">
           <h1 class="profile__name">123123</h1>
@@ -120,11 +138,133 @@
         </div>
       </div>
     </div>
+
+    <!-- Модальное окно для обрезки -->
+    <div v-if="showCropper" class="profile__cropper-modal">
+      <div class="profile__cropper-container">
+        <Cropper
+          ref="cropperRef"
+          :src="imageSrc"
+          class="cropper"
+          image-restriction="stencil"
+          :stencil-component="CircleStencil"
+          :stencil-props="{
+            aspectRatio: 1/1,
+          }"
+          :min-width="256"
+          :background-wrapper-component="CustomBackgroundWrapper"
+        />
+        <div class="profile__cropper-actions">
+          <button @click="cancelCrop" class="profile__cropper-button profile__cropper-button--cancel">
+            Отмена
+          </button>
+          <button @click="cropImage" class="profile__cropper-button profile__cropper-button--confirm">
+            Применить
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { Cropper } from 'vue-advanced-cropper'
+import 'vue-advanced-cropper/dist/style.css'
+import { useUsers } from '@/composables/useUsers'
+import CustomBackgroundWrapper from '@/components/CustomBackgroundWrapper.vue'
+import CircleStencil from '@/components/CircleStencil.vue'
 
+const defaultAvatar = "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png";
+
+interface CropperInstance {
+  getResult: () => {
+    canvas: HTMLCanvasElement;
+  };
+  reset: () => void;
+}
+
+const { getUserInfo, uploadAvatar, deleteAvatar, avatarUrl, getAvatar } = useUsers()
+const fileInput = ref<HTMLInputElement | null>(null)
+const uploadError = ref<string | null>(null)
+const showCropper = ref(false)
+const imageSrc = ref('')
+const cropperRef = ref<CropperInstance | null>(null)
+
+const triggerFileInput = () => {
+  uploadError.value = null
+  fileInput.value?.click()
+}
+
+const handleFileSelect = (e: Event) => {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+
+  if (!file.type.startsWith('image/')) {
+    uploadError.value = 'Пожалуйста, выберите изображение'
+    return
+  }
+
+  const reader = new FileReader()
+  reader.onload = (event) => {
+    imageSrc.value = event.target?.result as string
+    showCropper.value = true
+  }
+  reader.readAsDataURL(file)
+}
+
+const cropImage = async () => {
+  if (!cropperRef.value) return
+
+  const result = cropperRef.value.getResult()
+  const canvas = result.canvas
+
+  if (!canvas) {
+    uploadError.value = 'Не удалось обрезать изображение'
+    return
+  }
+
+  canvas.toBlob(async (blob) => {
+    if (!blob) {
+      uploadError.value = 'Не удалось обрезать изображение'
+      return
+    }
+
+    try {
+      const croppedFile = new File([blob], 'avatar.jpg', { type: 'image/jpeg' })
+      await uploadAvatar(croppedFile)
+      showCropper.value = false
+      imageSrc.value = ''
+    } catch (error) {
+      uploadError.value = error.response?.data?.message || 'Ошибка при загрузке аватара'
+      console.error('Ошибка при загрузке аватара:', error)
+    }
+  }, 'image/jpeg', 0.9)
+}
+
+const cancelCrop = () => {
+  if (cropperRef.value) {
+    cropperRef.value.reset()
+  }
+  showCropper.value = false
+  imageSrc.value = ''
+  if (fileInput.value) fileInput.value.value = ''
+}
+
+const handleDeleteAvatar = async () => {
+  try {
+    uploadError.value = null
+    await deleteAvatar()
+  } catch (error) {
+    uploadError.value = error.response?.data?.message || 'Ошибка при удалении аватара'
+    console.error('Ошибка при удалении аватара:', error)
+  }
+}
+
+onMounted(async () => {
+  await getUserInfo()
+  await getAvatar()
+})
 </script>
 
 <style lang="scss" scoped>
@@ -153,6 +293,7 @@
 
   &__avatar {
     margin-right: 24px;
+    position: relative;
 
     @media (max-width: 768px) {
       margin-right: 0;
@@ -164,16 +305,72 @@
     width: 100px;
     height: 100px;
     border-radius: 50%;
-    background: var(--primary-green);
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+
+    &:hover .profile__avatar-overlay {
+      opacity: 1;
+    }
+
+    @media (max-width: 768px) {
+      width: 80px;
+      height: 80px;
+    }
+  }
+
+  &__avatar-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   &__avatar-text {
-    color: var(--vt-c-dark-blue-gray);
-    font-size: 32px;
+    font-size: 36px;
     font-weight: bold;
+    color: white;
+
+    @media (max-width: 768px) {
+      font-size: 28px;
+    }
+  }
+
+  &__avatar-input {
+    display: none;
+  }
+
+  &__avatar-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    color: white;
+  }
+
+  &__avatar-delete {
+    margin-top: 8px;
+    padding: 4px 8px;
+    background: var(--vt-c-red);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      background: var(--vt-c-red);
+    }
   }
 
   &__info {
@@ -276,6 +473,80 @@
 
   &__setting-value {
     color: var(--vt-c-light-gray);
+  }
+
+  &__avatar-error {
+    color: var(--vt-c-red);
+    font-size: 12px;
+    margin-top: 8px;
+    text-align: center;
+  }
+
+  &__cropper-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  &__cropper-container {
+    width: 90%;
+    max-width: 500px;
+    background: var(--vt-c-dark-blue-gray);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+
+    .cropper {
+      width: 100%;
+      height: 300px;
+      margin-bottom: 20px;
+      background: var(--vt-c-dark-blue-gray);
+
+      @media (max-width: 768px) {
+        height: 250px;
+      }
+    }
+  }
+
+  &__cropper-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  &__cropper-button {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+
+    &--cancel {
+      background: var(--vt-c-blue-gray);
+      color: var(--vt-c-white);
+
+      &:hover {
+        background: var(--vt-c-blue-gray);
+      }
+    }
+
+    &--confirm {
+      background: var(--primary-green);
+      color: var(--vt-c-black);
+
+      &:hover {
+        background: var(--primary-green);
+      }
+    }
   }
 }
 

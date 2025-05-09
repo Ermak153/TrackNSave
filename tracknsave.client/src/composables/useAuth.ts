@@ -1,9 +1,9 @@
 import { ref } from 'vue';
 import api from '@/api/axios';
+import { useUsers } from "@/composables/useUsers.ts";
+const { getUserInfo, username, role } = useUsers();
 
 const isAuthenticated = ref(false);
-const username = ref<string | null>(null);
-const role = ref<string | null>(null);
 const lastCheckTime = ref(0);
 const isChecking = ref(false);
 
@@ -101,26 +101,13 @@ export function useAuth() {
     }
   };
 
-  const getUserInfo = async () => {
-    try {
-      const response = await api.get('/user/me');
-      username.value = response.data.username;
-      role.value = response.data.role;
-    } catch {
-      username.value = null;
-      role.value = null;
-    }
-  };
 
   return {
     checkAuthStatus,
-    getUserInfo,
     logout,
     login,
     refreshToken,
     setupTokenRefreshTimer,
     isAuthenticated,
-    username,
-    role
   };
 }

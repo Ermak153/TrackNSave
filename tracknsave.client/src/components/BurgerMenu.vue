@@ -21,10 +21,13 @@
           <router-link to="/receipt" @click="closeMenu">Чеки</router-link>
         </li>
         <li>
-          <router-link to="/profile" @click="closeMenu">Помощь</router-link>
+          <router-link to="/profile" @click="closeMenu">Профиль</router-link>
         </li>
         <li>
-          <router-link to="/profile" @click="closeMenu">Профиль</router-link>
+          <router-link to="/contacts" @click="closeMenu">Контакты</router-link>
+        </li>
+        <li>
+          <router-link to="/help" @click="closeMenu">Помощь</router-link>
         </li>
         <li>
           <router-link to="/login" @click="handleLogoutAndClose">Выйти</router-link>
@@ -37,7 +40,7 @@
           <ElAvatar
             class="profile__avatar"
             :size="50"
-            src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
+            :src="avatarUrl || defaultAvatar"
           />
         </router-link>
       </div>
@@ -48,12 +51,17 @@
 
 <script setup lang="ts">
   import { useAuth } from "@/composables/useAuth.ts";
+  import { useUsers } from "@/composables/useUsers";
   import { ElAvatar } from "element-plus";
   import { ref, onMounted } from "vue";
-  const {getUserInfo, username, logout } = useAuth();
+  const { logout } = useAuth();
+  const { getUserInfo, getAvatar, username, avatarUrl } = useUsers();
+
+  const defaultAvatar = "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png";
 
   onMounted(async () => {
     await getUserInfo();
+    await getAvatar();
   });
 
   const isOpen = ref(false);

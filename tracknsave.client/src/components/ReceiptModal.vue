@@ -30,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-  import { defineProps, defineEmits, ref, shallowRef } from "vue";
+  import { defineEmits, ref, shallowRef } from "vue";
   import ModalMain from "@/components/ModalMain.vue";
   import QrScanner from "@/components/QrScanner.vue";
   import EnterFiscal from "@/components/EnterFiscal.vue";

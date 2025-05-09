@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using TrackNSave.Server.Services;
 using TrackNSave.Server.Services.Interfaces;
+using TrackNSave.Server.Services.Implementations;
 
 namespace TrackNSave.Server.Controllers
 {
@@ -16,11 +17,13 @@ namespace TrackNSave.Server.Controllers
     {
         private readonly IUserService _userService;
         private readonly ITokenService _tokenService;
+        private readonly IAvatarService _avatarService;
 
-        public UserController(IUserService userService, ITokenService tokenService)
+        public UserController(IUserService userService, ITokenService tokenService, IAvatarService avatarService)
         {
             _userService = userService;
             _tokenService = tokenService;
+            _avatarService = avatarService;
         }
 
         [HttpGet("status")]
@@ -65,6 +68,115 @@ namespace TrackNSave.Server.Controllers
                 email = user.Email,
                 role = roleName
             });
+        }
+
+        [HttpGet("get-avatar")]
+        [Authorize]
+        public async Task<IActionResult?> GetUserAvatar()
+        {
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(username))
+            {
+                return StatusCode(401, new { message = "User is not authenticated" });
+            }
+
+            var user = await _userService.GetUserByUsernameAsync(username);
+            if (user == null)
+            {
+                return StatusCode(404, new { message = "User was not found" });
+            }
+
+            var avatar = await _avatarService.GetAvatarAsync(user.Id, user.AvatarFileName);
+            if (avatar == null)
+            {
+                return StatusCode(204);
+            }
+
+            return avatar;
+        }
+
+        [HttpPost("upload-avatar")]
+        [Authorize]
+        public async Task<IActionResult> UploadAvatar(IFormFile file)
+        {
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(username))
+            {
+                return StatusCode(401, new { message = "User is not authenticated" });
+            }
+
+            var user = await _userService.GetUserByUsernameAsync(username);
+            if (user == null)
+            {
+                return StatusCode(404, new { message = "User was not found" });
+            }
+
+            try
+            {
+                if (!string.IsNullOrEmpty(user.AvatarFileName))
+                {
+                    await _avatarService.DeleteAvatarAsync(user.Id, user.AvatarFileName);
+                }
+
+                var newAvatarFileName = await _avatarService.SaveAvatarAsync(file, user.Id);
+                user.AvatarFileName = newAvatarFileName;
+                await _userService.UpdateUserAvatarAsync(user);
+
+                return StatusCode(200, new { avatarFileName = newAvatarFileName });
+            }
+            catch (AvatarServiceException ex)
+            {
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
+            }
+            catch (UserServiceException ex)
+            {
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Error updating the user's avatar" });
+            }
+        }
+
+        [HttpDelete("delete-avatar")]
+        [Authorize]
+        public async Task<IActionResult> DeleteAvatar()
+        {
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(username))
+            {
+                return StatusCode(401, new { message = "User is not authenticated" });
+            }
+
+            var user = await _userService.GetUserByUsernameAsync(username);
+            if (user == null)
+            {
+                return StatusCode(404, new { message = "User was not found" });
+            }
+
+            try
+            {
+                if (!string.IsNullOrEmpty(user.AvatarFileName))
+                {
+                    await _avatarService.DeleteAvatarAsync(user.Id, user.AvatarFileName);
+                    user.AvatarFileName = null;
+                    await _userService.UpdateUserAvatarAsync(user);
+                }
+
+                return StatusCode(200, new { message = "Avatar deleted successfully" });
+            }
+            catch (AvatarServiceException ex)
+            {
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
+            }
+            catch (UserServiceException ex)
+            {
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "" });
+            }
         }
     }
 }

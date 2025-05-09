@@ -7,8 +7,9 @@ namespace TrackNSave.Server.Services.Interfaces
         Task<User?> GetUserByIdAsync(Guid userId);
         Task<User?> GetUserByUsernameAsync(string username);
         Task<User?> GetUserByEmailAsync(string email);
-        Task<bool> AddUserAsync(User user);
-        Task<string?> RegisterUserAsync(string username, string email, string password);
         Task<string?> GetUserIdFromJwtAsync(string token);
+        Task<string?> RegisterUserAsync(string username, string email, string password);
+        Task<bool> AddUserAsync(User user);
+        Task UpdateUserAvatarAsync(User user);
     }
 }

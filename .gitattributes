@@ -1,2 +1,1 @@
 *.vue text eol=lf
-tracknsave.ai/models/xlm-roberta-large/model.safetensors_part_* filter=lfs diff=lfs merge=lfs -text

@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
 import { useAuth } from '@/composables/useAuth';
+import { useUsers } from '@/composables/useUsers';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -58,11 +59,12 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   const auth = useAuth();
+  const users = useUsers();
 
   if (to.meta.requiresAuth) {
     try {
       await auth.checkAuthStatus();
-      await auth.getUserInfo();
+      await users.getUserInfo();
     } catch (error) {
       console.error('Ошибка при проверке аутентификации:', error);
     }
@@ -79,7 +81,7 @@ router.beforeEach(async (to, from, next) => {
   }
 
   if (to.meta.roles && Array.isArray(to.meta.roles)) {
-    if (!auth.role.value || !to.meta.roles.includes(auth.role.value)) {
+    if (!users.role.value || !to.meta.roles.includes(users.role.value)) {
       next({ name: 'HomePage' });
       return;
     }

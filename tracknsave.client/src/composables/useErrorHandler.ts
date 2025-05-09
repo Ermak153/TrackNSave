@@ -97,7 +97,9 @@ export function useErrorHandler() {
       "Token refresh error": "Ошибка обновления токена",
       "Invalid access token": "Неверный токен доступа",
       "Token is invalid or malformed": "Токен недействителен или неправильно сформирован",
-      "Product name is required": "Требуется указать название продукта"
+      "Product name is required": "Требуется указать название продукта",
+      "File size exceeds 5MB limit": "Размер файла не может превышать 5 Мб",
+      "Invalid file extension": "Неверное разрешение файла"
     };
     return messages[message || ""] || "Некорректный запрос";
   };
@@ -137,6 +139,10 @@ export function useErrorHandler() {
       "Error generating refresh token": "Ошибка генерации токена обновления",
       "Error saving refresh token": "Ошибка сохранения токена обновления",
       "Failed to revoke refresh token": "Не удалось отозвать токен обновления",
+      "Error updating the user's avatar": "Ошибка при обновлении аватара пользователя",
+      "Error saving avatar": "Ошибка сохранения аватара пользователя",
+      "Error deleting avatar": "Ошибка при удалении аватара пользователя",
+      "Error updating user avatar": "Ошибка при изменении аватара пользователя"
 
     };
     return messages[message || ""] || "Внутренняя ошибка сервера";
@@ -163,6 +169,7 @@ export function useErrorHandler() {
     const messages: Record<string, string> = {
       "Receipt not found": "Чек не найден",
       "Token not found": "Токен не найден",
+      "User was not found": "Пользователь не найден"
     };
     return messages[message || "" || "По вашему запросу ничего не найдено"]
   }
