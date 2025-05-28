@@ -1,13 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using TrackNSave.Server.Services;
 using TrackNSave.Server.Services.Interfaces;
 using TrackNSave.Server.Services.Implementations;
+using TrackNSave.Server.Models.DTOs;
 
 namespace TrackNSave.Server.Controllers
 {
@@ -66,7 +62,8 @@ namespace TrackNSave.Server.Controllers
             {
                 username = user.Username,
                 email = user.Email,
-                role = roleName
+                role = roleName,
+                registrationDate = user.CreatedAt
             });
         }
 
@@ -176,6 +173,37 @@ namespace TrackNSave.Server.Controllers
             catch (Exception)
             {
                 return StatusCode(500, new { message = "" });
+            }
+        }
+
+        [HttpPost("change-password")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest model)
+        {
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(username))
+            {
+                return StatusCode(401, new { message = "User is not authenticated" });
+            }
+
+            if (model.CurrentPassword == model.NewPassword)
+            {
+                return StatusCode(400, new { message = "The new password matches the current one" });
+            }
+
+            try
+            {
+                var result = await _userService.ChangePasswordAsync(username, model.CurrentPassword, model.NewPassword);
+                if (!result)
+                {
+                    return StatusCode(400, new { message = "Current password is incorrect" });
+                }
+
+                return StatusCode(200, new { message = "Password changed successfully" });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Error changing password"});
             }
         }
     }

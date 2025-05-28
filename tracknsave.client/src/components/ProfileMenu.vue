@@ -20,6 +20,7 @@
           </span>
         </div>
         <ul class="avatar__menu-list">
+          <li v-if="role === 'Admin'"><router-link to="/admin">Админ панель</router-link></li>
           <li><router-link to="/profile">Профиль</router-link></li>
           <li><router-link to="/receipt">Мои чеки</router-link></li>
           <li class="avatar__menu-list--exit">
@@ -36,10 +37,10 @@
   import { useUsers } from "@/composables/useUsers";
   import { ElAvatar } from "element-plus";
   import { ref, onMounted } from "vue";
-  const { isAuthenticated, logout } = useAuth();
-  const { getUserInfo, getAvatar, username, avatarUrl } = useUsers();
+  import defaultAvatar from "@/assets/defaultAvatar.png"
 
-  const defaultAvatar = "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png";
+  const { isAuthenticated, logout } = useAuth();
+  const { getUserInfo, getAvatar, username, avatarUrl, role } = useUsers();
 
   let isMenuVisible = ref(false);
 
@@ -89,10 +90,12 @@
       top: -10px;
       right: -10px;
       width: 200px;
-      height: 200px;
       background: var(--vt-c-dark-blue-gray);
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3),
+      0 -6px 12px rgba(0, 0, 0, 0.2),
+      0 1px 3px rgba(0, 0, 0, 0.25);
       border-radius: 12px;
+      padding-bottom: 10px;
     }
 
     &__menu-fade-enter-active,
@@ -119,7 +122,6 @@
   .avatar {
     &__menu-list {
       width: 200px;
-      height: 130px;
       margin: 0;
       padding: 0;
       list-style: none;

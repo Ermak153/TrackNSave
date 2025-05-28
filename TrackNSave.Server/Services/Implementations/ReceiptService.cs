@@ -5,6 +5,7 @@ using TrackNSave.Server.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using TrackNSave.Server.Utils;
 using DinkToPdf.Contracts;
+using TrackNSave.Server.Models.DTOs;
 
 namespace TrackNSave.Server.Services.Implementations
 {
@@ -111,6 +112,52 @@ namespace TrackNSave.Server.Services.Implementations
             catch (Exception)
             {
                 throw new ReceiptServiceException(500, "An unexpected error occurred while updating the receipt");
+            }
+        }
+
+        public async Task<int> GetTotalReceiptsCountAsync()
+        {
+            try
+            {
+                return await _context.Receipts.CountAsync();
+            }
+            catch (Exception)
+            {
+                throw new ReceiptServiceException(500, "An unexpected error occurred while getting receipts count");
+            }
+        }
+
+        public async Task<decimal> GetTotalAmountAsync()
+        {
+            try
+            {
+                var receipts = await _context.Receipts.ToListAsync();
+                decimal totalAmount = 0;
+
+                foreach (var receipt in receipts)
+                {
+                    try
+                    {
+                        if (!string.IsNullOrEmpty(receipt.ReceiptData))
+                        {
+                            var formattedReceipt = JsonSerializer.Deserialize<FormattedReceipt>(receipt.ReceiptData);
+                            if (formattedReceipt?.TotalSum != null)
+                            {
+                                totalAmount += formattedReceipt.TotalSum;
+                            }
+                        }
+                    }
+                    catch (JsonException)
+                    {
+                        continue;
+                    }
+                }
+
+                return totalAmount;
+            }
+            catch (Exception)
+            {
+                throw new ReceiptServiceException(500, "An unexpected error occurred while calculating total amount");
             }
         }
     }

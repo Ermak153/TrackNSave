@@ -150,18 +150,33 @@ services:
     image: ${DOCKER_REGISTRY-}tracknsaveclient
     build:
       context: .
-      dockerfile: tracknsave.client/Dockerfile.dev
+      dockerfile: tracknsave.client/Dockerfile
     environment:
-      - DOCKER=true
+      - DOMAIN=${DOMAIN}
+      - EMAIL=${EMAIL}
     ports:
       - "5173:5173"
+      - "443:443"
+      - "80:80"  
     volumes:
       - ./tracknsave.client:/app
       - /app/node_modules
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
     networks:
       - postgres
     depends_on:
       - tracknsave.server
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    command: certonly --webroot -w /var/www/certbot --email ${EMAIL} --agree-tos --no-eff-email -d ${DOMAIN} -d www.${DOMAIN}
+    depends_on:
+      - tracknsave.client
 
   tracknsave.ai:
     container_name: tracknsave.ai_container

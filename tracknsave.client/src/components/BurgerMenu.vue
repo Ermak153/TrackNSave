@@ -17,6 +17,7 @@
         <li>
           <router-link to="/" @click="closeMenu">Главная</router-link>
         </li>
+        <li v-if="role === 'Admin'"><router-link to="/admin">Админ панель</router-link></li>
         <li>
           <router-link to="/receipt" @click="closeMenu">Чеки</router-link>
         </li>
@@ -54,10 +55,9 @@
   import { useUsers } from "@/composables/useUsers";
   import { ElAvatar } from "element-plus";
   import { ref, onMounted } from "vue";
+  import defaultAvatar from "@/assets/defaultAvatar.png"
   const { logout } = useAuth();
-  const { getUserInfo, getAvatar, username, avatarUrl } = useUsers();
-
-  const defaultAvatar = "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png";
+  const { getUserInfo, getAvatar, username, avatarUrl, role } = useUsers();
 
   onMounted(async () => {
     await getUserInfo();
@@ -141,7 +141,7 @@
       list-style: none;
       padding: 0;
       margin: 0;
-      margin-top: 20vh;
+      margin-top: 15vh;
       text-align: center;
       display: flex;
       flex-direction: column;

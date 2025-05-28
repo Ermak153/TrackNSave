@@ -5,3 +5,4 @@
 bin/
 obj/
 tracknsave.ai/models/xlm-roberta-large/model.safetensors
+certbot/

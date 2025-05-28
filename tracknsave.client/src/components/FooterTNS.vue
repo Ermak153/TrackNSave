@@ -22,14 +22,17 @@
 </template>
 
 <script setup lang="ts">
+  import githubIcon from "@/assets/icons/github.svg";
+  import telegramIcon from "@/assets/icons/telegram.svg";
+
   const logos = [
     {
-      src: "src/assets/icons/github.svg",
+      src: githubIcon,
       alt: "Github",
       link: "https://github.com/Ermak153/TrackNSave",
     },
     {
-      src: "src/assets/icons/telegram.svg",
+      src: telegramIcon,
       alt: "Telegram",
       link: "https://t.me/neko153",
     },

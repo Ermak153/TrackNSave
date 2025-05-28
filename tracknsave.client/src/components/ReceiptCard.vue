@@ -567,6 +567,7 @@
 
     &__item {
       padding: 12px 0;
+      cursor: pointer;
 
       &:not(:last-child) {
         border-bottom: 1px solid rgb(255, 255, 255, 0.05);
@@ -673,7 +674,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 100;
+      z-index: 10000;
       padding: 16px;
     }
 

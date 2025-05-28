@@ -17,9 +17,9 @@ var apiToken = Environment.GetEnvironmentVariable("API_TOKEN");
 var postgresPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
 var postgresUser = Environment.GetEnvironmentVariable("POSTGRES_USER");
 var postgresDb = Environment.GetEnvironmentVariable("POSTGRES_DB");
+var maintenanceToken = Environment.GetEnvironmentVariable("MAINTENANCE_TOKEN");
 
-//var connectionString = $"Host=host.docker.internal;Database={postgresDb};Username={postgresUser};Password={postgresPassword}";
-var connectionString = "Host=host.docker.internal;Database=TrackNSave;Username=postgres_track;Password=wef4fESfbe34gdfws65790rgeSREfd";
+var connectionString = $"Host=host.docker.internal;Database={postgresDb};Username={postgresUser};Password={postgresPassword}";
 var jwtAudience = $"{postgresDb}Users";
 
 Environment.SetEnvironmentVariable("ConnectionStrings__PostgreSQL", connectionString);
@@ -42,7 +42,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowLocalhost",
         policy => policy
-            .WithOrigins("https://localhost:5173", "https://192.168.31.131:5173", "https://tracknsave.ru:5173")
+            .WithOrigins("https://localhost:5173", "https://192.168.31.131:5173", "https://tracknsave.ru:5173", "https://tracknsave.ru/")
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials());
@@ -57,7 +57,9 @@ builder.Services.AddScoped<IReceiptPdfService, ReceiptPdfService>();
 builder.Services.AddScoped<IProductHistoryService, ProductHistoryService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAvatarService, AvatarService>();
+builder.Services.AddScoped<IMaintenanceService, MaintenanceService>();
 builder.Services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
+builder.Services.AddMemoryCache();
 
 var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!);
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

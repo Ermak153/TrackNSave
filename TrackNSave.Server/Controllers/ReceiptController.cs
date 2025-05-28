@@ -8,6 +8,7 @@ using TrackNSave.Server.Services.Interfaces;
 
 namespace TrackNSave.Server.Controllers
 {
+    //Контролер чеков предоставляющий основной функционал приложения
     [ApiController]
     [Route("api/receipt/")]
     [Authorize]
@@ -20,6 +21,7 @@ namespace TrackNSave.Server.Controllers
         private readonly IReceiptPdfService _receiptPdfService = receiptPdfService;
         private readonly IProductHistoryService _productHistoryService = productHistoryService;
 
+        //Эндпоинт "list" возвращающий список чеков
         [HttpGet("list")]
         public async Task<IActionResult> GetUserReceipts()
         {
@@ -54,7 +56,7 @@ namespace TrackNSave.Server.Controllers
                 return StatusCode(500, new { message = "Error when receiving receipts" });
             }
         }
-
+        //Эндпоинт "add" позволяющий добавить новый верифицированный чек в систему
         [HttpPost("add")]
         public async Task<IActionResult> AddReceipt([FromBody] ReceiptRequest request)
         {
@@ -135,7 +137,7 @@ namespace TrackNSave.Server.Controllers
                 return StatusCode(500, new { message = "Error processing receipt data" });
             }
         }
-
+        //Эндпоинт "manual-add" позволяющий добавить новый неверифицированный чек в систему
         [HttpPost("manual-add")]
         public async Task<IActionResult> AddManualReceipt([FromBody] FormattedReceipt request)
         {
@@ -191,7 +193,7 @@ namespace TrackNSave.Server.Controllers
                 return StatusCode(500, new { message = "Error saving receipt" });
             }
         }
-
+        //Эндпоинт "delete" позволяющий удалить чек из системы
         [HttpDelete("delete")]
         public async Task<IActionResult> DeleteReceipt([FromBody] ReceiptIdRequest request)
         {
@@ -229,7 +231,7 @@ namespace TrackNSave.Server.Controllers
             await _receiptService.DeleteReceiptAsync(request.ReceiptId);
             return StatusCode(200, new { message = "Receipt deleted successfully" });
         }
-
+        //Эндопинт "edit" позволяющий редактировать неверифицированные чеки
         [HttpPut("edit")]
         public async Task<IActionResult> EditReceipt([FromBody] EditReceiptRequest request)
         {
@@ -290,7 +292,7 @@ namespace TrackNSave.Server.Controllers
                 return StatusCode(500, new { message = "Error updating receipt" });
             }
         }
-
+        //Эндпоинт "get-pdf" позволяющий сформировать чек в PDF формат
         [HttpPost("get-pdf")]
         public async Task<IActionResult> GetReceiptPdf([FromBody] ReceiptIdRequest request)
         {
@@ -367,7 +369,7 @@ namespace TrackNSave.Server.Controllers
                 return StatusCode(500, new { message = "Error generating receipt PDF" });
             }
         }
-        
+        //Эндпоинт "product-history" позволяющий предоставить данные для построения графика динамики цены на товар
         [HttpPost("product-history")]
         public async Task<IActionResult> GetProductPriceHistory([FromBody] ReceiptHistoryRequest productName)
         {

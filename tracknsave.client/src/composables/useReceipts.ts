@@ -32,6 +32,33 @@ const dateRange = ref<[string | null, string | null]>([null, null]);
 
 
 export const useReceipts = () => {
+  const totalReceipts = computed(() => state.receipts.length);
+
+  const totalAmount = computed(() =>
+    +(state.receipts.reduce((sum, r) => sum + (r.receiptData.totalSum || 0), 0) / 100).toFixed(2)
+  );
+
+  const mostPopularCategory = computed(() => {
+  if (state.receipts.length === 0) return "Отсутствует";
+
+  const categoryCounts: Record<string, number> = {};
+
+  state.receipts.forEach(receipt => {
+    receipt.receiptData.items.forEach(item => {
+      if (item.category) {
+        categoryCounts[item.category] = (categoryCounts[item.category] || 0) + 1;
+      }
+    });
+  });
+
+  const categories = Object.keys(categoryCounts);
+  if (categories.length === 0) return "Отсутствует";
+
+  return categories.reduce((a, b) =>
+    categoryCounts[a] > categoryCounts[b] ? a : b
+  );
+});
+
   const fetchReceipts = async () => {
     try {
       const response = await api.get("/receipt/list");
@@ -101,7 +128,6 @@ export const useReceipts = () => {
     dateRange.value = range;
   };
 
-
   const setSortOption = (option: string) => {
     sortOption.value = option;
   };
@@ -110,6 +136,9 @@ export const useReceipts = () => {
     state,
     filteredReceipts,
     sortOption,
+    totalReceipts,
+    totalAmount,
+    mostPopularCategory,
     setDateRange,
     fetchReceipts,
     deleteReceipt,

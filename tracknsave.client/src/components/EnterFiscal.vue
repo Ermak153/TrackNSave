@@ -211,7 +211,7 @@
           class="receipt-form__button receipt-form__button--submit"
           :disabled="isLoading"
         >
-          {{ isLoading ? "Отправка..." : "Сохранить" }}
+          {{ isLoading ? "Отправка..." : "Добавить" }}
         </button>
       </div>
     </Form>

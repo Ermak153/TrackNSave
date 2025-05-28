@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using TrackNSave.Server.Models;
+using TrackNSave.Server.Models.DTOs;
 
 namespace TrackNSave.Server.Services.Interfaces
 {
@@ -11,5 +12,7 @@ namespace TrackNSave.Server.Services.Interfaces
         Task<Receipt?> GetReceiptByIdAsync(int receiptId);
         Task<bool> DeleteReceiptAsync(int receiptId);
         Task<bool> UpdateReceiptAsync(int receiptId, FormattedReceipt formattedReceipt);
+        Task<int> GetTotalReceiptsCountAsync();
+        Task<decimal> GetTotalAmountAsync();
     }
 }

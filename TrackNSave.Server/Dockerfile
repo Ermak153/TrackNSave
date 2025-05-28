@@ -44,6 +44,7 @@ ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "./TrackNSave.Server.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
+USER root
 WORKDIR /app
 COPY --from=publish /app/publish .
 

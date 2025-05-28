@@ -27,7 +27,8 @@ export default defineConfig({
       usePolling: true,
     },
     hmr: {
-      host: "tracknsave.ru",
+      // host: "tracknsave.ru",
+      host: "178.49.193.39",
       protocol: 'wss',
       port: 5173
     }

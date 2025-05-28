@@ -343,10 +343,6 @@
         bottom: 0;
         margin-top: 0;
         border-radius: 12px 12px 0 0;
-        box-shadow:
-        0 8px 16px rgba(0, 0, 0, 0.3),
-        0 -6px 12px rgba(0, 0, 0, 0.2),
-        0 1px 3px rgba(0, 0, 0, 0.25);
         padding: 16px;
         padding-top: 42px;
         padding-bottom: calc(16px + env(safe-area-inset-bottom, 0));

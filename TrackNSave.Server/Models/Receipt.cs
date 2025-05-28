@@ -30,7 +30,6 @@ namespace TrackNSave.Server.Models
         public string QrCodeData {  get; set; } = null!;
         [Required]
         public bool IsVerified { get; set; }
-
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

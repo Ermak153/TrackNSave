@@ -75,7 +75,8 @@ export function useErrorHandler() {
 
   const handleUnauthorize = (message?: string) => {
     const messages: Record<string, string> = {
-      "Invalid username or password": "Неверное имя пользователя или пароль"
+      "Invalid username or password": "Неверное имя пользователя или пароль",
+      "Invalid token": "Необходим токен"
     };
     return messages[message || ""] || "Пользователь не аутентифицирован";
   }
@@ -99,7 +100,10 @@ export function useErrorHandler() {
       "Token is invalid or malformed": "Токен недействителен или неправильно сформирован",
       "Product name is required": "Требуется указать название продукта",
       "File size exceeds 5MB limit": "Размер файла не может превышать 5 Мб",
-      "Invalid file extension": "Неверное разрешение файла"
+      "Invalid file extension": "Неверное разрешение файла",
+      "Current password is incorrect": "Текущий пароль неверный",
+      "The new password matches the current one": "Новый пароль совпадает с текущим",
+      "Token is required": "Для доступа необходим токен"
     };
     return messages[message || ""] || "Некорректный запрос";
   };
@@ -142,8 +146,11 @@ export function useErrorHandler() {
       "Error updating the user's avatar": "Ошибка при обновлении аватара пользователя",
       "Error saving avatar": "Ошибка сохранения аватара пользователя",
       "Error deleting avatar": "Ошибка при удалении аватара пользователя",
-      "Error updating user avatar": "Ошибка при изменении аватара пользователя"
-
+      "Error updating user avatar": "Ошибка при изменении аватара пользователя",
+      "Error changing password": "Ошибка при смене пароля",
+      "Error getting maintenance status": "Ошибка при получении статуса обслуживания",
+      "Error toggling maintenance mode": "Ошибка при переключении режима обслуживания",
+      "Error during emergency toggle": "Ошибка при экстренном переключении"
     };
     return messages[message || ""] || "Внутренняя ошибка сервера";
   };

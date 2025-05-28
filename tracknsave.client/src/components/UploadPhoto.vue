@@ -170,9 +170,11 @@
   import api from "@/api/axios";
   import { useReceipts } from "@/composables/useReceipts";
   import { useErrorHandler } from "@/composables/useErrorHandler";
+  import { useToast } from "@/composables/useToast";
 
   const { fetchReceipts } = useReceipts();
   const { errorMessage, handleApiError } = useErrorHandler();
+  const toast = useToast();
 
   interface FileItem {
     file: File;
@@ -245,11 +247,11 @@
     ];
     const maxSize = 10 * 1024 * 1024;
     if (!allowedTypes.includes(file.type)) {
-      alert("Недопустимый формат файла!");
+      toast.show("Недопустимый формат файла", "error");
       return false;
     }
     if (file.size > maxSize) {
-      alert("Файл слишком большой!");
+      toast.show("Файл слишком большой", "error");
       return false;
     }
     return true;

@@ -20,14 +20,24 @@
               </svg>
             </div>
           </div>
-          <button v-if="avatarUrl" class="profile__avatar-delete" @click="handleDeleteAvatar">
-            Удалить аватар
-          </button>
+
+          <div v-if="avatarUrl" class="profile__avatar-actions">
+            <button class="profile__avatar-delete" @click="showDeleteConfirm = true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+              </svg>
+              <span>Удалить</span>
+            </button>
+          </div>
+
           <p v-if="uploadError" class="profile__avatar-error">{{ uploadError }}</p>
         </div>
         <div class="profile__info">
-          <h1 class="profile__name">123123</h1>
-          <p class="profile__email">123123@yandex.ru</p>
+          <h1 class="profile__name">{{ username }}</h1>
+          <p class="profile__email">{{ email }}</p>
         </div>
       </div>
 
@@ -42,7 +52,7 @@
             </svg>
           </div>
           <div class="info-card__details">
-            <h3 class="info-card__value">127</h3>
+            <h3 class="info-card__value">{{ totalReceipts }}</h3>
             <p class="info-card__label">Всего чеков</p>
           </div>
         </div>
@@ -56,7 +66,7 @@
             </svg>
           </div>
           <div class="info-card__details">
-            <h3 class="info-card__value">45,678 ₽</h3>
+            <h3 class="info-card__value">{{ totalAmount }} ₽</h3>
             <p class="info-card__label">Общая сумма</p>
           </div>
         </div>
@@ -70,7 +80,7 @@
             </svg>
           </div>
           <div class="info-card__details">
-            <h3 class="info-card__value">Продукты питания</h3>
+            <h3 class="info-card__value">{{ mostPopularCategory }}</h3>
             <p class="info-card__label">Популярная категория</p>
           </div>
         </div>
@@ -82,66 +92,36 @@
           <div class="profile__info-grid">
             <div class="profile__info-item">
               <label class="profile__info-label">Логин</label>
-              <p class="profile__info-value">123123</p>
+              <p class="profile__info-value">{{ username }}</p>
             </div>
             <div class="profile__info-item">
               <label class="profile__info-label">В приложении</label>
-              <p class="profile__info-value">1 год 3 мес</p>
+              <p class="profile__info-value">{{ registrationTime }}</p>
             </div>
             <div class="profile__info-item">
               <label class="profile__info-label">Email</label>
-              <p class="profile__info-value">123123@yandex.ru</p>
+              <p class="profile__info-value">{{ email }}</p>
             </div>
-          </div>
-        </div>
-
-        <div class="profile__section">
-          <h2 class="profile__section-title">Настройки</h2>
-          <div class="profile__settings">
-            <div class="profile__setting-item">
-              <div class="profile__setting-info">
-                <svg class="profile__setting-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                  <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                </svg>
-                <span>Уведомления</span>
-              </div>
-              <label class="switch">
-                <input type="checkbox" checked>
-                <span class="slider round"></span>
-              </label>
-            </div>
-            <div class="profile__setting-item">
-              <div class="profile__setting-info">
-                <svg class="profile__setting-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                </svg>
-                <span>Темная тема</span>
-              </div>
-              <label class="switch">
-                <input type="checkbox">
-                <span class="slider round"></span>
-              </label>
-            </div>
-            <div class="profile__setting-item">
-              <div class="profile__setting-info">
-                <svg class="profile__setting-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="2" y1="12" x2="22" y2="12"></line>
-                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                </svg>
-                <span>Язык</span>
-              </div>
-              <span class="profile__setting-value">Русский</span>
+            <div class="profile__info-item">
+              <label class="profile__info-label">Смена пароля</label>
+              <p class="profile__info-value"><button class="profile__change-password" @click="showPasswordChange = true">Сменить пароль</button></p>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Модальное окно для обрезки -->
-    <div v-if="showCropper" class="profile__cropper-modal">
-      <div class="profile__cropper-container">
+    <div v-if="showCropper" class="profile__modal">
+      <div class="profile__modal-container">
+        <div class="profile__modal-header">
+          <h3 class="profile__modal-title">Обрезать изображение</h3>
+          <button class="profile__modal-close" @click="cancelCrop">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
         <Cropper
           ref="cropperRef"
           :src="imageSrc"
@@ -154,16 +134,127 @@
           :min-width="256"
           :background-wrapper-component="CustomBackgroundWrapper"
         />
-        <div class="profile__cropper-actions">
-          <button @click="cancelCrop" class="profile__cropper-button profile__cropper-button--cancel">
+        <div class="profile__modal-actions">
+          <button @click="cancelCrop" class="profile__modal-button profile__modal-button--cancel">
             Отмена
           </button>
-          <button @click="cropImage" class="profile__cropper-button profile__cropper-button--confirm">
+          <button @click="cropImage" class="profile__modal-button profile__modal-button--confirm">
             Применить
           </button>
         </div>
       </div>
     </div>
+
+        <transition name="fade">
+        <div v-if="showPasswordChange" class="delete-modal-overlay">
+          <div class="delete-modal" @click.stop>
+            <div class="delete-modal__content">
+              <h3 class="delete-modal__title">Смена пароля</h3>
+
+            <Form :validation-schema="currentSchema" @submit="handlePasswordChange" class="profile__password-form" ref="form">
+            <div class="profile__form-group">
+              <label for="currentPassword" class="profile__form-label">Текущий пароль</label>
+              <Field name="currentPassword" v-slot="{ field, errorMessage }">
+                <input
+                  v-model="passwordForm.currentPassword"
+                  v-bind="field"
+                  id="currentPassword"
+                  type="password"
+                  :class="['profile__form-input', { 'profile__form-input--error': errorMessage }]"
+                  required
+                  placeholder="Введите текущий пароль"
+                />
+              </Field>
+              <ErrorMessage name="currentPassword" v-slot="{ message }">
+                <div v-if="message" class="profile__password-error">{{ message }}</div>
+              </ErrorMessage>
+            </div>
+
+            <div class="profile__form-group">
+              <label for="newPassword" class="profile__form-label">Новый пароль</label>
+              <Field name="newPassword" v-slot="{ field, errorMessage }">
+                <input
+                  v-model="passwordForm.newPassword"
+                  v-bind="field"
+                  id="newPassword"
+                  type="password"
+                  :class="['profile__form-input', { 'profile__form-input--error': errorMessage }]"
+                  required
+                  placeholder="Введите новый пароль"
+                />
+              </Field>
+              <ErrorMessage name="newPassword" v-slot="{ message }">
+                <div v-if="message" class="profile__password-error">{{ message }}</div>
+              </ErrorMessage>
+            </div>
+
+            <div class="profile__form-group">
+              <label for="confirmPassword" class="profile__form-label">Подтверждение пароля</label>
+              <Field name="confirmPassword" v-slot="{ field, errorMessage }">
+                <input
+                  v-model="passwordForm.confirmPassword"
+                  v-bind="field"
+                  id="confirmPassword"
+                  type="password"
+                  :class="['profile__form-input', { 'profile__form-input--error': errorMessage }]"
+                  required
+                  placeholder="Введите подтверждение пароля"
+                />
+              </Field>
+              <ErrorMessage name="confirmPassword" v-slot="{ message }">
+                <div v-if="message" class="profile__password-error">{{ message }}</div>
+              </ErrorMessage>
+            </div>
+
+            <div v-if="passwordError" class="profile__form-message profile__form-message--error">
+              {{ passwordError }}
+            </div>
+
+            <div v-if="passwordSuccess" class="profile__form-message profile__form-message--success">
+              {{ passwordSuccess }}
+            </div>
+
+            <div class="delete-modal__actions">
+
+              <button class="delete-modal__button delete-modal__button--cancel" @click="showPasswordChange = false"><span>Отмена</span></button>
+              <button type="submit" class="profile__form-submit" :disabled="isChangingPassword">
+                <span v-if="!isChangingPassword">Сменить пароль</span>
+                <span v-else>Меняем пароль...</span>
+              </button>
+            </div>
+          </Form>
+            </div>
+          </div>
+        </div>
+      </transition>
+
+    <transition name="fade">
+        <div v-if="showDeleteConfirm" class="delete-modal-overlay">
+          <div class="delete-modal" @click.stop>
+            <div class="delete-modal__content">
+              <h3 class="delete-modal__title">Подтверждение удаления</h3>
+              <p class="delete-modal__text">
+                Вы уверены, что хотите удалить аватар?
+              </p>
+
+              <div class="delete-modal__actions">
+                <button
+                  class="delete-modal__button delete-modal__button--cancel"
+                  @click="showDeleteConfirm = false"
+                >
+                  Отмена
+                </button>
+                <button
+                  class="delete-modal__button delete-modal__button--confirm"
+                  @click="confirmDeleteAvatar"
+                >
+                  Удалить
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </transition>
   </div>
 </template>
 
@@ -174,8 +265,41 @@ import 'vue-advanced-cropper/dist/style.css'
 import { useUsers } from '@/composables/useUsers'
 import CustomBackgroundWrapper from '@/components/CustomBackgroundWrapper.vue'
 import CircleStencil from '@/components/CircleStencil.vue'
+import defaultAvatar from "@/assets/defaultAvatar.png"
+import { useErrorHandler } from '@/composables/useErrorHandler'
+import { string } from "yup";
+import { Form, Field, ErrorMessage, configure } from "vee-validate";
+import type { FormActions } from "vee-validate";
+import { useReceipts } from '@/composables/useReceipts'
 
-const defaultAvatar = "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png";
+const { totalAmount, totalReceipts, mostPopularCategory, fetchReceipts } = useReceipts();
+
+  configure({
+    validateOnBlur: true,
+    validateOnChange: true,
+    validateOnInput: false,
+    validateOnModelUpdate: false,
+  });
+
+  interface FormValues {
+    username: string;
+    email: string;
+    password: string;
+  }
+
+  const form = ref<FormActions<FormValues>>();
+
+  const currentSchema = {
+    currentPassword: string()
+      .required("Текущий пароль обязателен")
+      .min(5, "Пароль должен быть длиннее 5 символов"),
+    newPassword: string()
+      .required("Новый пароль обязателен")
+      .min(5, "Пароль должен быть длиннее 5 символов"),
+    confirmPassword: string()
+      .required("Подтверждение пароля обязательно")
+      .min(5, "Пароль должен быть длиннее 5 символов")
+  };
 
 interface CropperInstance {
   getResult: () => {
@@ -184,17 +308,60 @@ interface CropperInstance {
   reset: () => void;
 }
 
-const { getUserInfo, uploadAvatar, deleteAvatar, avatarUrl, getAvatar } = useUsers()
+const { getUserInfo, uploadAvatar, deleteAvatar, getAvatar, changePassword, avatarUrl, username, email, registrationTime } = useUsers()
+const { errorMessage, handleApiError } = useErrorHandler();
 const fileInput = ref<HTMLInputElement | null>(null)
 const uploadError = ref<string | null>(null)
 const showCropper = ref(false)
 const imageSrc = ref('')
 const cropperRef = ref<CropperInstance | null>(null)
+const showDeleteConfirm = ref(false)
+const showPasswordChange = ref(false)
 
 const triggerFileInput = () => {
   uploadError.value = null
   fileInput.value?.click()
 }
+
+const passwordForm = ref({
+  currentPassword: '',
+  newPassword: '',
+  confirmPassword: ''
+});
+const passwordError = ref<string | null>(null);
+const passwordSuccess = ref<string | null>(null);
+const isChangingPassword = ref(false);
+
+const handlePasswordChange = async () => {
+  passwordError.value = null;
+  passwordSuccess.value = null;
+  errorMessage.value = null;
+
+  if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) {
+    passwordError.value = 'Новый пароль и подтверждение не совпадают';
+    return;
+  }
+
+  try {
+    isChangingPassword.value = true;
+    await changePassword(
+      passwordForm.value.currentPassword,
+      passwordForm.value.newPassword
+    );
+
+    passwordSuccess.value = 'Пароль успешно изменён';
+    passwordForm.value = {
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    };
+  } catch (error) {
+    handleApiError(error);
+    passwordError.value = errorMessage.value;
+  } finally {
+    isChangingPassword.value = false;
+  }
+};
 
 const handleFileSelect = (e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0]
@@ -251,24 +418,29 @@ const cancelCrop = () => {
   if (fileInput.value) fileInput.value.value = ''
 }
 
-const handleDeleteAvatar = async () => {
+const confirmDeleteAvatar = async () => {
   try {
     uploadError.value = null
     await deleteAvatar()
+    showDeleteConfirm.value = false
   } catch (error) {
     uploadError.value = error.response?.data?.message || 'Ошибка при удалении аватара'
     console.error('Ошибка при удалении аватара:', error)
+    showDeleteConfirm.value = false
   }
 }
 
 onMounted(async () => {
   await getUserInfo()
   await getAvatar()
+  await fetchReceipts()
 })
 </script>
 
 <style lang="scss" scoped>
 .profile {
+  padding: 0 20px;
+
   &__container {
     width: 100%;
     max-width: 1280px;
@@ -298,6 +470,10 @@ onMounted(async () => {
     @media (max-width: 768px) {
       margin-right: 0;
       margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
   }
 
@@ -312,8 +488,10 @@ onMounted(async () => {
     cursor: pointer;
     overflow: hidden;
 
-    &:hover .profile__avatar-overlay {
-      opacity: 1;
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        opacity: 1;
+      }
     }
 
     @media (max-width: 768px) {
@@ -326,16 +504,6 @@ onMounted(async () => {
     width: 100%;
     height: 100%;
     object-fit: cover;
-  }
-
-  &__avatar-text {
-    font-size: 36px;
-    font-weight: bold;
-    color: white;
-
-    @media (max-width: 768px) {
-      font-size: 28px;
-    }
   }
 
   &__avatar-input {
@@ -355,21 +523,154 @@ onMounted(async () => {
     opacity: 0;
     transition: opacity 0.3s ease;
     color: white;
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+
+  &__avatar-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 12px;
   }
 
   &__avatar-delete {
-    margin-top: 8px;
-    padding: 4px 8px;
-    background: var(--vt-c-red);
-    color: white;
-    border: none;
-    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: none;
+    color: var(--vt-c-light-red);
+    border: 2px solid var(--vt-c-light-red);
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 12px;
-    transition: background-color 0.3s ease;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
 
-    &:hover {
-      background: var(--vt-c-red);
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background: var(--vt-c-light-red);
+        color: var(--vt-c-white);
+      }
+    }
+
+    svg {
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+      padding: 8px 16px;
+    }
+  }
+
+  &__password-error {
+    color: var(--vt-c-light-red);
+    font-size: 14px;
+  }
+
+  &__password-form {
+    margin-top: 16px;
+    display: grid;
+    gap: 16px;
+    max-width: 400px;
+    width: 100%;
+
+    @media (max-width: 768px) {
+      max-width: 100%;
+      gap: 12px;
+    }
+  }
+
+  &__form-group {
+    display: grid;
+    gap: 6px;
+  }
+
+  &__form-label {
+    font-size: 13px;
+    color: var(--vt-c-light-gray);
+    font-weight: 500;
+    padding-left: 4px;
+  }
+
+  &__form-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--primary-green);
+    border-radius: 5px;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
+
+    &--error {
+      border-color: var(--vt-c-light-red);
+    }
+  }
+
+  &__form-message {
+    font-size: 13px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin: 4px 0;
+
+    &--error {
+      color: var(--vt-c-light-red);
+      background-color: rgba(220, 53, 69, 0.08);
+    }
+
+    &--success {
+      color: var(--primary-green);
+      background-color: rgba(137, 225, 89, 0.08);
+    }
+  }
+
+  &__form-submit {
+    width: 100%;
+    padding: 10px 16px;
+    background-color: var(--primary-green);
+    color: var(--vt-c-dark-blue-gray);
+    border: 2px solid var(--primary-green);
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background: none;
+        color: var(--primary-green);
+      }
+    }
+  }
+
+  &__change-password {
+    width: 100%;
+    max-width: 300px;
+    padding: 10px 16px;
+    background-color: var(--primary-green);
+    color: var(--vt-c-dark-blue-gray);
+    border: 2px solid var(--primary-green);
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    @media (max-width: 768px) {
+      max-width: 100%;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background: none;
+        color: var(--primary-green);
+      }
     }
   }
 
@@ -445,36 +746,6 @@ onMounted(async () => {
     }
   }
 
-  &__settings {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  &__setting-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 0;
-  }
-
-  &__setting-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: var(--vt-c-white);
-  }
-
-  &__setting-icon {
-    color: var(--primary-green);
-    width: 20px;
-    height: 20px;
-  }
-
-  &__setting-value {
-    color: var(--vt-c-light-gray);
-  }
-
   &__avatar-error {
     color: var(--vt-c-red);
     font-size: 12px;
@@ -482,7 +753,7 @@ onMounted(async () => {
     text-align: center;
   }
 
-  &__cropper-modal {
+  &__modal {
     position: fixed;
     top: 0;
     left: 0;
@@ -493,59 +764,126 @@ onMounted(async () => {
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    padding: 20px;
   }
 
-  &__cropper-container {
-    width: 90%;
+  &__modal-container {
+    width: 100%;
     max-width: 500px;
     background: var(--vt-c-dark-blue-gray);
     border-radius: 16px;
-    padding: 20px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
 
-    .cropper {
-      width: 100%;
-      height: 300px;
-      margin-bottom: 20px;
-      background: var(--vt-c-dark-blue-gray);
-
-      @media (max-width: 768px) {
-        height: 250px;
-      }
+    &--small {
+      max-width: 400px;
     }
   }
 
-  &__cropper-actions {
+  &__modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  &__modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--vt-c-white);
+    margin: 0;
+  }
+
+  &__modal-close {
+    background: transparent;
+    border: none;
+    color: var(--vt-c-light-gray);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: var(--vt-c-white);
+    }
+  }
+
+  &__modal-content {
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  &__modal-icon {
+    margin-bottom: 16px;
+
+    &--warning {
+      color: var(--vt-c-red);
+    }
+  }
+
+  &__modal-message {
+    font-size: 16px;
+    color: var(--vt-c-white);
+    margin: 0;
+  }
+
+  &__modal-actions {
     display: flex;
     justify-content: flex-end;
     gap: 12px;
-    margin-top: 20px;
+    padding: 16px 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
   }
 
-  &__cropper-button {
-    padding: 8px 16px;
+  &__modal-button {
+    padding: 10px 16px;
     border-radius: 8px;
     font-weight: 500;
+    font-size: 14px;
     cursor: pointer;
     transition: all 0.2s ease;
     border: none;
 
     &--cancel {
-      background: var(--vt-c-blue-gray);
+      background: none;
+      border: 2px solid var(--vt-c-white);
       color: var(--vt-c-white);
+      font-size: 16px;
+      font-weight: 600;
 
       &:hover {
-        background: var(--vt-c-blue-gray);
+        background: var(--vt-c-white);
+        color: var(--vt-c-dark-blue-gray);
       }
     }
 
     &--confirm {
+      border: 2px solid var(--primary-green);
       background: var(--primary-green);
-      color: var(--vt-c-black);
+      color: var(--vt-c-dark-blue-gray);
+      font-size: 16px;
+      font-weight: 600;
 
       &:hover {
-        background: var(--primary-green);
+        background: none;
+        color: var(--primary-green);
       }
+    }
+  }
+
+  .cropper {
+    width: 100%;
+    height: 300px;
+    background: var(--vt-c-dark-blue-gray);
+
+    @media (max-width: 768px) {
+      height: 250px;
     }
   }
 }
@@ -591,57 +929,109 @@ onMounted(async () => {
   }
 }
 
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 50px;
-  height: 24px;
+.delete-modal {
+    background: var(--vt-c-dark-blue-gray);
+    border-radius: 12px;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.25);
 
-  input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
-
-  .slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: var(--vt-c-light-background);
-    transition: .4s;
-    border: 1px solid var(--vt-c-blue-gray);
-
-    &:before {
-      position: absolute;
-      content: "";
-      height: 16px;
-      width: 16px;
-      left: 4px;
-      bottom: 3px;
-      background-color: var(--vt-c-blue-gray);
-      transition: .4s;
+    &-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.65);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      padding: 16px;
     }
 
-    &.round {
-      border-radius: 24px;
+    &__content {
+      padding: 24px;
+    }
 
-      &:before {
-        border-radius: 50%;
+    &__title {
+      color: var(--vt-c-white);
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0 0 16px;
+    }
+
+    &__text {
+      color: var(--vt-c-light-gray);
+      font-size: 16px;
+      margin: 0 0 24px;
+      line-height: 1.5;
+    }
+
+    &__actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    &__button {
+      width: 100%;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &--cancel {
+        background: transparent;
+        color: var(--vt-c-white);
+        border: 2px solid var(--vt-c-white);
+
+        @media (hover: hover) and (pointer: fine) {
+          &:hover {
+            background: var(--vt-c-white);
+            color: var(--vt-c-dark-blue-gray);
+            transition: 0.2s;
+          }
+        }
+      }
+
+      &--confirm {
+        background: var(--vt-c-light-red);
+        color: var(--vt-c-white);
+        border: 2px solid var(--vt-c-light-red);
+
+        @media (hover: hover) and (pointer: fine) {
+          &:hover {
+            background: transparent;
+            color: var(--vt-c-light-red);
+            transition: 0.2s;
+          }
+        }
+      }
+    }
+
+    @media (max-width: 768px) {
+      &__content {
+        padding: 20px;
+      }
+
+      &__button {
+        padding: 12px 16px;
+        flex: 1;
       }
     }
   }
 
-  input:checked + .slider {
-    background-color: var(--primary-green);
-    border-color: var(--primary-green);
-
-    &:before {
-      transform: translateX(26px);
-      background-color: var(--vt-c-white);
-    }
+  .fade-enter-active,
+  .fade-leave-active {
+    transition: opacity 0.2s ease;
   }
-}
+
+  .fade-enter-from,
+  .fade-leave-to {
+    opacity: 0;
+  }
 </style>

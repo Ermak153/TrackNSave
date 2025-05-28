@@ -33,20 +33,16 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, onMounted, ref } from "vue";
+  import { onMounted, ref } from "vue";
   import { useReceipts } from "@/composables/useReceipts";
   import { useAuth } from '@/composables/useAuth.ts';
   import DashBoard from "@/components/DashBoard.vue";
   import ReceiptCard from "@/components/ReceiptCard.vue";
 
-  const { state, sortOption, filteredReceipts, setDateRange, fetchReceipts, setSortOption } = useReceipts();
+  const { state, sortOption, filteredReceipts, totalAmount, totalReceipts, setDateRange, fetchReceipts, setSortOption } = useReceipts();
   const { isAuthenticated, checkAuthStatus } = useAuth();
 
   const dateRange = ref<[string | null, string | null]>([null, null]);
-  const totalReceipts = computed(() => state.receipts.length);
-  const totalAmount = computed(() =>
-    +(state.receipts.reduce((sum, r) => sum + (r.receiptData.totalSum || 0), 0) / 100).toFixed(2)
-  );
 
   const updateDateRange = (value: [string | null, string | null]) => {
     dateRange.value = value;

@@ -6,16 +6,6 @@
         <p class="help__subtitle">Часто задаваемые вопросы и полезная информация</p>
       </div>
 
-      <div class="help__search">
-        <div class="help__search-wrapper">
-          <svg class="help__search-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-          <input type="text" class="help__search-input" placeholder="Поиск по вопросам...">
-        </div>
-      </div>
-
       <div class="help__sections">
         <div class="help__section">
           <h2 class="help__section-title">Основные вопросы</h2>
@@ -23,33 +13,24 @@
             <div class="help__faq-item">
               <div class="help__faq-question">
                 <h3 class="help__faq-title">Как добавить новый чек?</h3>
-                <svg class="help__faq-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="6 9 12 15 18 9"/>
-                </svg>
               </div>
               <div class="help__faq-answer">
-                <p>Чтобы добавить новый чек, нажмите на кнопку "Добавить чек" в главном меню. Затем вы можете либо отсканировать QR-код с чека, либо ввести данные вручную.</p>
+                <p>Чтобы добавить новый чек, нажмите на кнопку "Добавить чек" на странице "Чеки". Затем вы можете выбрать удобный способ добавления чека.</p>
               </div>
             </div>
 
             <div class="help__faq-item">
               <div class="help__faq-question">
                 <h3 class="help__faq-title">Как редактировать чек?</h3>
-                <svg class="help__faq-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="6 9 12 15 18 9"/>
-                </svg>
               </div>
               <div class="help__faq-answer">
-                <p>Для редактирования чека найдите его в списке чеков и нажмите на кнопку "Редактировать". Вы сможете изменить любые данные чека, включая товары и их количество.</p>
+                <p>Для редактирования чека найдите его в списке чеков и нажмите на кнопку "Изменить". Вы сможете изменить любые данные чека, включая товары и их количество. Изменять можно только неверифицированные чеки.</p>
               </div>
             </div>
 
             <div class="help__faq-item">
               <div class="help__faq-question">
                 <h3 class="help__faq-title">Как удалить чек?</h3>
-                <svg class="help__faq-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="6 9 12 15 18 9"/>
-                </svg>
               </div>
               <div class="help__faq-answer">
                 <p>Чтобы удалить чек, найдите его в списке чеков и нажмите на кнопку "Удалить". Подтвердите удаление в появившемся диалоговом окне.</p>
@@ -64,24 +45,18 @@
             <div class="help__faq-item">
               <div class="help__faq-question">
                 <h3 class="help__faq-title">Как посмотреть статистику расходов?</h3>
-                <svg class="help__faq-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="6 9 12 15 18 9"/>
-                </svg>
               </div>
               <div class="help__faq-answer">
-                <p>Статистику расходов можно посмотреть в разделе "Аналитика". Там вы найдете графики и диаграммы, показывающие ваши расходы по категориям и временным периодам.</p>
+                <p>Общее количество чеков, общую сумму расходов и популярную категорию можно увидеть на странице профиля.</p>
               </div>
             </div>
 
             <div class="help__faq-item">
               <div class="help__faq-question">
-                <h3 class="help__faq-title">Как настроить категории?</h3>
-                <svg class="help__faq-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="6 9 12 15 18 9"/>
-                </svg>
+                <h3 class="help__faq-title">Как посмотреть динамику цены на товар?</h3>
               </div>
               <div class="help__faq-answer">
-                <p>Категории можно настроить в разделе "Настройки" -> "Категории". Там вы можете добавить новые категории, изменить существующие или удалить ненужные.</p>
+                <p>Найдите необходимый товар на странице чеков и нажмите по нему. Отобразится график с подробной динамикой цены на выбранный товар. Если данных для отображения динамики цены недостаточно, будет отображено сообщение "История цен не найдена".</p>
               </div>
             </div>
           </div>
@@ -97,6 +72,8 @@
 
 <style lang="scss" scoped>
 .help {
+  padding: 0 20px;
+
   &__container {
     width: 100%;
     max-width: 1280px;

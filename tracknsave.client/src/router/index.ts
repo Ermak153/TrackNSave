@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
 import { useAuth } from '@/composables/useAuth';
 import { useUsers } from '@/composables/useUsers';
+import { useMaintenance } from '@/composables/useMaintenance';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -47,6 +48,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true, roles: ['Admin'] }
   },
   {
+    path: '/maintenance',
+    name: 'MaintenancePage',
+    component: () => import('@/pages/MaintenancePage.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
     path: '/:pathMatch(.*)*',
     redirect: '/'
   }
@@ -60,6 +67,35 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const auth = useAuth();
   const users = useUsers();
+  const maintenance = useMaintenance();
+
+  await maintenance.checkMaintenanceStatus();
+
+  if (maintenance.isMaintenanceMode.value) {
+    if (to.name === 'MaintenancePage') {
+      next();
+      return;
+    }
+
+    if (to.meta.requiresAuth) {
+      try {
+        await auth.checkAuthStatus();
+        await users.getUserInfo();
+      } catch (error) {
+        console.error('Ошибка при проверке аутентификации:', error);
+      }
+    }
+
+    if (!auth.isAuthenticated.value || users.role.value !== 'Admin') {
+      next({ name: 'MaintenancePage' });
+      return;
+    }
+  }
+
+  if (!maintenance.isMaintenanceMode.value && to.name === 'MaintenancePage') {
+    next({ name: 'HomePage' });
+    return;
+  }
 
   if (to.meta.requiresAuth) {
     try {

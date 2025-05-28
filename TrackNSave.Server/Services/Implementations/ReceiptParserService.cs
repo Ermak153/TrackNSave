@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using TrackNSave.Server.Models;
+using TrackNSave.Server.Models.DTOs;
 using TrackNSave.Server.Services.Interfaces;
 
 namespace TrackNSave.Server.Services.Implementations

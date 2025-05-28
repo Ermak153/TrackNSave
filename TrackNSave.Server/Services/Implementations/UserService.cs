@@ -154,5 +154,92 @@ namespace TrackNSave.Server.Services.Implementations
                 throw new UserServiceException(500, "Error updating user avatar");
             }
         }
+
+        public async Task<bool> ChangePasswordAsync(string username, string currentPassword, string newPassword)
+        {
+            var user = await GetUserByUsernameAsync(username);
+            if (user == null)
+            {
+                return false;
+            }
+
+            if (!_passwordService.VerifyPassword(currentPassword, user.PasswordHash, user.PasswordSalt))
+            {
+                return false;
+            }
+
+            _passwordService.CreatePasswordHash(newPassword, out byte[] newHash, out byte[] newSalt);
+
+            user.PasswordHash = newHash;
+            user.PasswordSalt = newSalt;
+
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<(List<User> Users, int TotalCount)> GetAllUsersAsync(int page = 1, int pageSize = 10)
+        {
+            try
+            {
+                var totalCount = await _context.Users.CountAsync();
+
+                var users = await _context.Users
+                    .Include(u => u.Role)
+                    .OrderByDescending(u => u.CreatedAt)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                return (users, totalCount);
+            }
+            catch (Exception)
+            {
+                throw new UserServiceException(500, "Error retrieving users");
+            }
+        }
+
+        public async Task<bool> UpdateUserAsync(Guid userId, string username, string email)
+        {
+            try
+            {
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                if (user == null)
+                {
+                    throw new UserServiceException(404, "User not found");
+                }
+
+                var existingUsername = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Username == username && u.Id != userId);
+                if (existingUsername != null)
+                {
+                    throw new UserServiceException(400, "Username already exists");
+                }
+
+                var existingEmail = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Email == email && u.Id != userId);
+                if (existingEmail != null)
+                {
+                    throw new UserServiceException(400, "Email already exists");
+                }
+
+                user.Username = username;
+                user.Email = email;
+
+                _context.Users.Update(user);
+                await _context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (UserServiceException)
+            {
+                throw;
+            }
+            catch (Exception)
+            {
+                throw new UserServiceException(500, "Error updating user");
+            }
+        }
     }
 }

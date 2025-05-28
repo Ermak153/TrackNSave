@@ -40,8 +40,9 @@
     font-size: 16px;
     font-weight: 600;
     z-index: 1000;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3), 0 -6px 12px rgba(0, 0, 0, 0.2),
-      0 1px 3px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3),
+    0 -6px 12px rgba(0, 0, 0, 0.2),
+    0 1px 3px rgba(0, 0, 0, 0.25);
 
     &--success {
       background: var(--primary-green);

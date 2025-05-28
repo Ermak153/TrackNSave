@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using TrackNSave.Server.Models;
 
 namespace TrackNSave.Server.Models.DTOs
 {
